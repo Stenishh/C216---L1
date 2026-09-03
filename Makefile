@@ -1,23 +1,25 @@
-PYTHON := python
-POETRY := $(PYTHON) -m poetry
-APP := src.main:app
-HOST := 127.0.0.1
-PORT := 8000
+BACKEND_DIR := backend
+POETRY ?= poetry
+APP ?= src.main:app
+HOST ?= 127.0.0.1
+PORT ?= 8000
+
+.DEFAULT_GOAL := help
 
 .PHONY: help install run test clean
 
-help: ## Exibe os comandos disponiveis
-	@echo "Comandos disponiveis:"
-	@$(PYTHON) -c "import re; from pathlib import Path; text = Path('Makefile').read_text(); [print(f'  {name:<12} {description}') for name, description in re.findall(r'^([a-zA-Z_-]+):.*?## (.*)$$', text, re.MULTILINE)]"
+help: ## Exibe os comandos disponíveis
+	@echo "Comandos disponíveis:"
+	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  %-12s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-install: ## Instala as dependencias do projeto
-	$(POETRY) install
+install: ## Instala as dependências do backend
+	cd $(BACKEND_DIR) && $(POETRY) install
 
 run: ## Inicia a API em modo de desenvolvimento
-	$(POETRY) run uvicorn $(APP) --host $(HOST) --port $(PORT) --reload
+	cd $(BACKEND_DIR) && $(POETRY) run uvicorn $(APP) --host $(HOST) --port $(PORT) --reload
 
-test: ## Executa os testes
-	$(POETRY) run pytest
+test: ## Executa os testes do backend
+	cd $(BACKEND_DIR) && $(POETRY) run pytest
 
-clean: ## Remove caches gerados pelo Python e pelo pytest
-	$(PYTHON) -c "import shutil; from pathlib import Path; [shutil.rmtree(path, ignore_errors=True) for pattern in ('__pycache__', '.pytest_cache') for path in Path('.').rglob(pattern)]"
+clean: ## Remove os caches gerados no backend
+	find $(BACKEND_DIR) -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -prune -exec rm -rf {} +
