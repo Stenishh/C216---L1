@@ -32,5 +32,11 @@ jobs:
       - name: Instalar dependências de desenvolvimento
         run: make install
 
+      - name: Verificar código com Ruff
+        run: make lint
+
+      - name: Verificar formatação com Ruff
+        run: make format-check
+
       - name: Executar Pytest
         run: make test

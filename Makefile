@@ -10,7 +10,7 @@ POSTGRES_DB ?= c216
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install run test clean docker-build docker-up docker-down \
+.PHONY: help install run test lint format format-check clean docker-build docker-up docker-down \
 	docker-restart docker-logs docker-status db-shell health
 
 help: ## Exibe os comandos disponíveis
@@ -26,8 +26,17 @@ run: ## Inicia a API em modo de desenvolvimento
 test: ## Executa os testes do backend
 	cd $(BACKEND_DIR) && $(POETRY) run python -m pytest tests
 
+lint: ## Verifica o código e os imports com Ruff
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check src tests
+
+format: ## Formata o código com Ruff
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format src tests
+
+format-check: ## Verifica a formatação sem alterar arquivos
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format --check src tests
+
 clean: ## Remove os caches gerados no backend
-	find $(BACKEND_DIR) -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -prune -exec rm -rf {} +
+	find $(BACKEND_DIR) -type d \( -name '__pycache__' -o -name '.pytest_cache' -o -name '.ruff_cache' \) -prune -exec rm -rf {} +
 
 docker-build: ## Constrói a imagem do backend
 	$(COMPOSE) build backend
