@@ -13,7 +13,7 @@ make test
 ```
 
 `make install` instala as dependências do `backend/poetry.lock`, incluindo o grupo
-`dev` com Pytest e HTTPX. O ambiente virtual fica em `backend/.venv`.
+`dev` com Pytest e HTTPX2. O ambiente virtual fica em `backend/.venv`.
 `make test` executa `poetry run python -m pytest tests` dentro de `backend`.
 
 Para executar um teste específico:
