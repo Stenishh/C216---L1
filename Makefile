@@ -17,14 +17,14 @@ help: ## Exibe os comandos disponíveis
 	@echo "Comandos disponíveis:"
 	@awk 'BEGIN {FS = ":.*## "} /^[a-zA-Z_-]+:.*## / {printf "  %-16s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-install: ## Instala as dependências do backend
-	cd $(BACKEND_DIR) && $(POETRY) install
+install: ## Instala as dependências do backend e de desenvolvimento
+	cd $(BACKEND_DIR) && $(POETRY) install --with dev
 
 run: ## Inicia a API em modo de desenvolvimento
 	cd $(BACKEND_DIR) && $(POETRY) run uvicorn $(APP) --host $(HOST) --port $(PORT) --reload
 
 test: ## Executa os testes do backend
-	cd $(BACKEND_DIR) && $(POETRY) run pytest
+	cd $(BACKEND_DIR) && $(POETRY) run python -m pytest tests
 
 clean: ## Remove os caches gerados no backend
 	find $(BACKEND_DIR) -type d \( -name '__pycache__' -o -name '.pytest_cache' \) -prune -exec rm -rf {} +
