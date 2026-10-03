@@ -10,7 +10,7 @@ POSTGRES_DB ?= c216
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install run test lint format format-check clean docker-build docker-up docker-down \
+.PHONY: help install run test test-unit test-integration test-all lint format format-check clean docker-build docker-up docker-down \
 	docker-restart docker-logs docker-status db-shell health
 
 help: ## Exibe os comandos disponíveis
@@ -23,7 +23,15 @@ install: ## Instala as dependências do backend e de desenvolvimento
 run: ## Inicia a API em modo de desenvolvimento
 	cd $(BACKEND_DIR) && $(POETRY) run uvicorn $(APP) --host $(HOST) --port $(PORT) --reload
 
-test: ## Executa os testes do backend
+test: test-unit test-integration ## Executa todas as suites do backend
+
+test-unit: ## Executa os testes unitarios
+	cd $(BACKEND_DIR) && $(POETRY) run python -m pytest tests/unit
+
+test-integration: ## Executa os testes de integracao HTTP
+	cd $(BACKEND_DIR) && $(POETRY) run python -m pytest tests/integration
+
+test-all: ## Executa todos os testes em uma chamada
 	cd $(BACKEND_DIR) && $(POETRY) run python -m pytest tests
 
 lint: ## Verifica o código e os imports com Ruff
