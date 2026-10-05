@@ -43,3 +43,6 @@ jobs:
 
       - name: Executar testes de integracao
         run: make test-integration
+
+      - name: Executar todas as suites juntas
+        run: make test-all
