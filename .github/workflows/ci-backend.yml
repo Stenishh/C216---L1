@@ -38,5 +38,11 @@ jobs:
       - name: Verificar formatação com Ruff
         run: make format-check
 
-      - name: Executar Pytest
-        run: make test
+      - name: Executar testes unitarios
+        run: make test-unit
+
+      - name: Executar testes de integracao
+        run: make test-integration
+
+      - name: Executar todas as suites juntas
+        run: make test-all

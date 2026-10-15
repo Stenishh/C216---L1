@@ -14,13 +14,14 @@ make test
 
 `make install` instala as dependências do `backend/poetry.lock`, incluindo o grupo
 `dev` com Pytest, HTTPX2 e Ruff. O ambiente virtual fica em `backend/.venv`.
-`make test` executa `poetry run python -m pytest tests` dentro de `backend`.
+`make test` executa as suites `tests/unit` e `tests/integration` dentro de
+`backend`. Use `make test-unit` ou `make test-integration` separadamente.
 
 Para executar um teste específico:
 
 ```sh
 cd backend
-poetry run python -m pytest tests/test_main.py -k health -v
+poetry run python -m pytest tests/integration/test_system.py -v
 ```
 
 ## Qualidade e formatação com Ruff

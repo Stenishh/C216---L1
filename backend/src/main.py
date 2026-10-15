@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 
+from src.repositories.tasks import TaskRepository
+from src.routers import system, tasks
+
 app = FastAPI(
     title="C216 L1 - Backend",
     description="Backend do laboratorio de Sistemas Distribuidos",
@@ -7,16 +10,6 @@ app = FastAPI(
 )
 
 
-@app.get("/health")
-def health():
-    return {"service": "backend", "state": "up"}
-
-
-@app.get("/info")
-def info():
-    return {
-        "disciplina": "C216 - Sistemas Distribuidos",
-        "instituicao": "INATEL",
-        "periodo": "2026.2",
-        "versao": app.version,
-    }
+app.state.task_repository = TaskRepository()
+app.include_router(system.router)
+app.include_router(tasks.router)
