@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 
-from src.repositories.tasks import TaskRepository
 from src.routers import system, tasks
 
 app = FastAPI(
@@ -10,6 +9,5 @@ app = FastAPI(
 )
 
 
-app.state.task_repository = TaskRepository()
 app.include_router(system.router)
 app.include_router(tasks.router)

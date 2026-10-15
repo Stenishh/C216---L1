@@ -13,10 +13,7 @@ class TaskService:
         return self.repository.get(task_id)
 
     def list(self, completed: bool | None, offset: int, limit: int) -> list[Task]:
-        tasks = self.repository.list()
-        if completed is not None:
-            tasks = [task for task in tasks if task.completed == completed]
-        return tasks[offset : offset + limit]
+        return self.repository.list(completed, offset, limit)
 
     def replace(self, task_id: int, data: TaskReplace) -> Task:
         return self.repository.update(task_id, data.model_dump())

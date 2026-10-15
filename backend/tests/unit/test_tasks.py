@@ -1,14 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from src.repositories.tasks import TaskNotFound, TaskRepository
+from src.repositories.tasks import TaskNotFound
 from src.schemas.tasks import TaskCreate, TaskPatch, TaskReplace
-from src.services.tasks import TaskService
-
-
-@pytest.fixture
-def service():
-    return TaskService(TaskRepository())
 
 
 def test_ids_are_not_reused(service):
@@ -36,11 +30,6 @@ def test_filter_before_pagination(service):
         service.create(TaskCreate(title=str(index), completed=index % 2 == 0))
     assert [task.title for task in service.list(True, 1, 1)] == ["2"]
     assert len(service.list(None, 0, 20)) == 5
-
-
-def test_repository_instances_are_isolated(service):
-    service.create(TaskCreate(title="Tarefa"))
-    assert TaskRepository().list() == []
 
 
 def test_results_cannot_mutate_storage(service):

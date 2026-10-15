@@ -36,5 +36,7 @@ class TaskPatch(BaseModel):
 
 
 class Task(TaskCreate):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True, frozen=True)
+    model_config = ConfigDict(
+        extra="forbid", str_strip_whitespace=True, frozen=True, from_attributes=True
+    )
     id: int = Field(gt=0)

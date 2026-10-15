@@ -1,5 +1,7 @@
-from threading import RLock
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
+from src.models.tasks import TaskModel
 from src.schemas.tasks import Task, TaskCreate
 
 
@@ -8,38 +10,44 @@ class TaskNotFound(Exception):
 
 
 class TaskRepository:
-    """Armazenamento por processo; operacoes atomicas entre threads."""
+    """Acesso persistente às tarefas usando a sessão da requisição."""
 
-    def __init__(self):
-        self._tasks: dict[int, Task] = {}
-        self._next_id = 1
-        self._lock = RLock()
+    def __init__(self, db: Session):
+        self.db = db
+
+    def _get_model(self, task_id: int) -> TaskModel:
+        task = self.db.get(TaskModel, task_id)
+        if task is None:
+            raise TaskNotFound(task_id)
+        return task
 
     def create(self, data: TaskCreate) -> Task:
-        with self._lock:
-            task = Task(id=self._next_id, **data.model_dump())
-            self._tasks[task.id] = task
-            self._next_id += 1
-            return task
+        task = TaskModel(**data.model_dump())
+        self.db.add(task)
+        self.db.commit()
+        self.db.refresh(task)
+        return Task.model_validate(task)
 
     def get(self, task_id: int) -> Task:
-        with self._lock:
-            if task_id not in self._tasks:
-                raise TaskNotFound(task_id)
-            return self._tasks[task_id]
+        return Task.model_validate(self._get_model(task_id))
 
-    def list(self) -> list[Task]:
-        with self._lock:
-            return list(self._tasks.values())
+    def list(
+        self, completed: bool | None = None, offset: int = 0, limit: int = 100
+    ) -> list[Task]:
+        query = select(TaskModel).order_by(TaskModel.id)
+        if completed is not None:
+            query = query.where(TaskModel.completed == completed)
+        tasks = self.db.scalars(query.offset(offset).limit(limit)).all()
+        return [Task.model_validate(task) for task in tasks]
 
     def update(self, task_id: int, changes: dict) -> Task:
-        with self._lock:
-            current = self.get(task_id)
-            task = Task.model_validate(current.model_dump() | changes)
-            self._tasks[task_id] = task
-            return task
+        task = self._get_model(task_id)
+        for field, value in changes.items():
+            setattr(task, field, value)
+        self.db.commit()
+        self.db.refresh(task)
+        return Task.model_validate(task)
 
     def delete(self, task_id: int) -> None:
-        with self._lock:
-            self.get(task_id)
-            del self._tasks[task_id]
+        self.db.delete(self._get_model(task_id))
+        self.db.commit()
