@@ -35,13 +35,13 @@ test-all: ## Executa todos os testes em uma chamada
 	cd $(BACKEND_DIR) && $(POETRY) run python -m pytest tests
 
 lint: ## Verifica o código e os imports com Ruff
-	cd $(BACKEND_DIR) && $(POETRY) run ruff check src tests
+	cd $(BACKEND_DIR) && $(POETRY) run ruff check src tests alembic
 
 format: ## Formata o código com Ruff
-	cd $(BACKEND_DIR) && $(POETRY) run ruff format src tests
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format src tests alembic
 
 format-check: ## Verifica a formatação sem alterar arquivos
-	cd $(BACKEND_DIR) && $(POETRY) run ruff format --check src tests
+	cd $(BACKEND_DIR) && $(POETRY) run ruff format --check src tests alembic
 
 clean: ## Remove os caches gerados no backend
 	find $(BACKEND_DIR) -type d \( -name '__pycache__' -o -name '.pytest_cache' -o -name '.ruff_cache' \) -prune -exec rm -rf {} +
@@ -69,3 +69,19 @@ db-shell: ## Abre o terminal SQL do PostgreSQL
 
 health: ## Verifica o endpoint de saúde do backend
 	curl --fail --silent --show-error $(BACKEND_URL)/health
+
+.PHONY: up-build logs-api db-upgrade db-migration db-current
+up-build: docker-up ## Constrói e inicia API e PostgreSQL
+
+logs-api: ## Acompanha os logs da API
+	$(COMPOSE) logs --follow --tail=100 backend
+
+db-upgrade: ## Aplica migrations no PostgreSQL do Compose
+	$(COMPOSE) run --rm backend alembic upgrade head
+
+db-migration: ## Gera migration (make db-migration msg="alteracao")
+	@test -n "$(msg)" || (echo 'Informe msg="descricao"'; exit 1)
+	cd $(BACKEND_DIR) && $(POETRY) run alembic revision --autogenerate -m "$(msg)"
+
+db-current: ## Mostra a revisão do banco no Compose
+	$(COMPOSE) run --rm backend alembic current
