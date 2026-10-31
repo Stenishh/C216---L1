@@ -1,4 +1,5 @@
 BACKEND_DIR := backend
+FRONTEND_DIR := frontend
 POETRY ?= poetry
 COMPOSE ?= $(shell docker compose version >/dev/null 2>&1 && echo docker compose || echo docker-compose)
 APP ?= src.main:app
@@ -85,3 +86,31 @@ db-migration: ## Gera migration (make db-migration msg="alteracao")
 
 db-current: ## Mostra a revisão do banco no Compose
 	$(COMPOSE) run --rm backend alembic current
+
+.PHONY: frontend-install frontend-dev frontend-lint frontend-format frontend-check frontend-test frontend-test-e2e frontend-build check-all
+
+frontend-install: ## Instala dependências do frontend com o lockfile
+	npm ci --prefix $(FRONTEND_DIR)
+
+frontend-dev: ## Inicia o Vite
+	npm run dev --prefix $(FRONTEND_DIR)
+
+frontend-lint: ## Verifica o lint do frontend
+	npm run lint --prefix $(FRONTEND_DIR)
+
+frontend-format: ## Formata o frontend com Biome
+	npm run format --prefix $(FRONTEND_DIR)
+
+frontend-check: ## Verifica lint, formatação e imports do frontend
+	npm run check --prefix $(FRONTEND_DIR)
+
+frontend-test: ## Executa Vitest (unitários e integração)
+	npm run test --prefix $(FRONTEND_DIR)
+
+frontend-test-e2e: ## Executa Playwright (inicia Vite automaticamente)
+	npm run test:e2e --prefix $(FRONTEND_DIR)
+
+frontend-build: ## Gera o build de produção
+	npm run build --prefix $(FRONTEND_DIR)
+
+check-all: lint format-check test frontend-check frontend-test frontend-build frontend-test-e2e ## Valida backend e frontend
