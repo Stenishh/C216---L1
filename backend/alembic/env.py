@@ -4,6 +4,7 @@ from alembic import context
 from src.core.config import DATABASE_URL
 from src.database.base import Base
 from src.models import TaskModel  # noqa: F401
+from src.models.items import ItemModel  # noqa: F401
 
 target_metadata = Base.metadata
 
