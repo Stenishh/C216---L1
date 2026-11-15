@@ -1,7 +1,7 @@
 BACKEND_DIR := backend
 FRONTEND_DIR := frontend
 POETRY ?= poetry
-COMPOSE ?= $(shell docker compose version >/dev/null 2>&1 && echo docker compose || echo docker-compose)
+COMPOSE ?= docker compose
 APP ?= src.main:app
 HOST ?= 127.0.0.1
 PORT ?= 8000
@@ -48,7 +48,7 @@ clean: ## Remove os caches gerados no backend
 	find $(BACKEND_DIR) -type d \( -name '__pycache__' -o -name '.pytest_cache' -o -name '.ruff_cache' \) -prune -exec rm -rf {} +
 
 docker-build: ## Constrói a imagem do backend
-	$(COMPOSE) build backend
+	$(COMPOSE) build api
 
 docker-up: ## Constrói e inicia todos os serviços em segundo plano
 	$(COMPOSE) up --build --detach
@@ -57,7 +57,7 @@ docker-down: ## Para e remove os serviços
 	$(COMPOSE) down
 
 docker-restart: ## Reinicia o serviço do backend
-	$(COMPOSE) restart backend
+	$(COMPOSE) restart api
 
 docker-logs: ## Acompanha os logs dos serviços
 	$(COMPOSE) logs --follow --tail=100
@@ -66,7 +66,7 @@ docker-status: ## Exibe o estado dos serviços
 	$(COMPOSE) ps
 
 db-shell: ## Abre o terminal SQL do PostgreSQL
-	$(COMPOSE) exec database psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
+	$(COMPOSE) exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 health: ## Verifica o endpoint de saúde do backend
 	curl --fail --silent --show-error $(BACKEND_URL)/health
@@ -75,17 +75,17 @@ health: ## Verifica o endpoint de saúde do backend
 up-build: docker-up ## Constrói e inicia API e PostgreSQL
 
 logs-api: ## Acompanha os logs da API
-	$(COMPOSE) logs --follow --tail=100 backend
+	$(COMPOSE) logs --follow --tail=100 api
 
 db-upgrade: ## Aplica migrations no PostgreSQL do Compose
-	$(COMPOSE) run --rm backend alembic upgrade head
+	$(COMPOSE) run --rm api alembic upgrade head
 
 db-migration: ## Gera migration (make db-migration msg="alteracao")
 	@test -n "$(msg)" || (echo 'Informe msg="descricao"'; exit 1)
 	cd $(BACKEND_DIR) && $(POETRY) run alembic revision --autogenerate -m "$(msg)"
 
 db-current: ## Mostra a revisão do banco no Compose
-	$(COMPOSE) run --rm backend alembic current
+	$(COMPOSE) run --rm api alembic current
 
 .PHONY: frontend-install frontend-dev frontend-lint frontend-format frontend-check frontend-test frontend-test-e2e frontend-build check-all
 
@@ -107,10 +107,20 @@ frontend-check: ## Verifica lint, formatação e imports do frontend
 frontend-test: ## Executa Vitest (unitários e integração)
 	npm run test --prefix $(FRONTEND_DIR)
 
-frontend-test-e2e: ## Executa Playwright (inicia Vite automaticamente)
+frontend-test-e2e: ## Executa Playwright contra E2E_BASE_URL
 	npm run test:e2e --prefix $(FRONTEND_DIR)
 
 frontend-build: ## Gera o build de produção
 	npm run build --prefix $(FRONTEND_DIR)
 
-check-all: lint format-check test frontend-check frontend-test frontend-build frontend-test-e2e ## Valida backend e frontend
+check-all: lint format-check test frontend-check frontend-test frontend-build e2e ## Valida backend e frontend
+
+.PHONY: down ps e2e
+down: docker-down ## Para os tres servicos preservando os dados
+ps: docker-status ## Mostra saude dos servicos
+
+E2E_BASE_URL ?= http://localhost:5173
+export E2E_BASE_URL
+
+e2e: ## Stack isolada; apaga somente o banco temporario lab-e2e
+	bash scripts/e2e.sh

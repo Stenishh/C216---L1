@@ -4,12 +4,20 @@ on:
   pull_request:
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "compose.yaml"
+      - "scripts/e2e.sh"
+      - ".env.example"
       - ".github/workflows/ci-frontend.yml"
       - "Makefile"
   push:
     branches: [main]
     paths:
       - "frontend/**"
+      - "backend/**"
+      - "compose.yaml"
+      - "scripts/e2e.sh"
+      - ".env.example"
       - ".github/workflows/ci-frontend.yml"
       - "Makefile"
 
@@ -48,7 +56,8 @@ jobs:
       - name: Instalar Chromium
         run: npx playwright install --with-deps chromium
       - name: Executar testes E2E
-        run: npm run test:e2e
+        working-directory: .
+        run: make e2e
       - name: Upload Playwright Report
         if: failure()
         uses: actions/upload-artifact@v4
