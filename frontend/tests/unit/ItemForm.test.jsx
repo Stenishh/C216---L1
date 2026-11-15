@@ -3,6 +3,29 @@ import userEvent from "@testing-library/user-event";
 import { expect, it, vi } from "vitest";
 import { ItemForm } from "../../src/components/ItemForm";
 
+it("bloqueia novos envios enquanto salva e mantém campos em erro", async () => {
+  let reject;
+  const onAdd = vi.fn(
+    () =>
+      new Promise((_, fail) => {
+        reject = fail;
+      }),
+  );
+  const user = userEvent.setup();
+  render(<ItemForm onAdd={onAdd} />);
+  await user.type(screen.getByLabelText("Nome"), "Notebook");
+  await user.click(screen.getByRole("button", { name: "Adicionar" }));
+  expect(screen.getByRole("button", { name: "Salvando..." })).toBeDisabled();
+  await user.click(screen.getByRole("button"));
+  expect(onAdd).toHaveBeenCalledTimes(1);
+  reject(new Error("Já existe um item com esse nome"));
+  expect(await screen.findByRole("alert")).toHaveTextContent(
+    "Já existe um item com esse nome",
+  );
+  expect(screen.getByLabelText("Nome")).toHaveValue("Notebook");
+  expect(screen.getByRole("button", { name: "Adicionar" })).toBeEnabled();
+});
+
 it("mostra erro acessível e não adiciona nome vazio", async () => {
   const user = userEvent.setup();
   const onAdd = vi.fn();

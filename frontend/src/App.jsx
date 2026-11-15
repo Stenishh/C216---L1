@@ -1,16 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ItemForm } from "./components/ItemForm";
 import { ItemList } from "./components/ItemList";
+
+import { createItem, listItems } from "./services/items";
 
 export default function App() {
   const [items, setItems] = useState([]);
 
-  // Na Prática 7, esta função passará a chamar POST /items.
-  function addItem({ name, description }) {
-    setItems((current) => [
-      ...current,
-      { id: crypto.randomUUID(), name, description },
-    ]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    listItems()
+      .then((data) => {
+        if (active) setItems(data);
+      })
+      .catch((error) => {
+        if (active) setLoadError(error.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function addItem(values) {
+    const created = await createItem(values);
+    setItems((current) => [...current, created]);
   }
 
   return (
@@ -24,10 +43,10 @@ export default function App() {
             Cadastre um nome e os detalhes do seu item.
           </p>
           <p className="text-sm text-slate-600">
-            Os itens ficam nesta sessão e desaparecem ao atualizar a página.
+            Os itens são salvos no banco e permanecem após atualizar a página.
           </p>
         </header>
-        <ItemForm onAdd={addItem} />
+        <ItemForm onAdd={addItem} disabled={loading || !!loadError} />
         <section aria-labelledby="items-heading" className="space-y-4">
           <h2 id="items-heading" className="text-xl font-semibold">
             Itens cadastrados
@@ -36,7 +55,13 @@ export default function App() {
             {items.length}{" "}
             {items.length === 1 ? "item cadastrado" : "itens cadastrados"}
           </p>
-          <ItemList items={items} />
+          {loading ? (
+            <p role="status">Carregando itens...</p>
+          ) : loadError ? (
+            <p role="alert">{loadError}</p>
+          ) : (
+            <ItemList items={items} />
+          )}
         </section>
       </div>
     </main>

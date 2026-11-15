@@ -1,19 +1,31 @@
 import { useState } from "react";
 import { validateItem } from "../validation";
 
-export function ItemForm({ onAdd }) {
+export function ItemForm({ onAdd, disabled = false }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [errors, setErrors] = useState({});
 
-  function handleSubmit(event) {
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  async function handleSubmit(event) {
     event.preventDefault();
+    if (saving || disabled) return;
+    setSubmitError("");
     const result = validateItem({ name, description });
     setErrors(result.errors);
     if (Object.keys(result.errors).length > 0) return;
-    onAdd(result.values);
-    setName("");
-    setDescription("");
+    setSaving(true);
+    try {
+      await onAdd(result.values);
+      setName("");
+      setDescription("");
+    } catch (error) {
+      setSubmitError(error.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   const fieldClass =
@@ -65,11 +77,17 @@ export function ItemForm({ onAdd }) {
           Opcional. Inclua os detalhes que precisar.
         </p>
       </div>
+      {submitError && (
+        <p role="alert" className="text-sm text-red-700">
+          {submitError}
+        </p>
+      )}
       <button
+        disabled={saving || disabled}
         type="submit"
         className="min-h-11 w-full cursor-pointer rounded-lg bg-blue-700 px-5 py-3 font-medium text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700 sm:w-auto"
       >
-        Adicionar
+        {saving ? "Salvando..." : "Adicionar"}
       </button>
     </form>
   );
