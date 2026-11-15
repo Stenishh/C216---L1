@@ -1,48 +1,15 @@
-import os
 from datetime import timedelta
 from decimal import Decimal
-from pathlib import Path
-from uuid import uuid4
 
 import pytest
-from alembic.config import Config
 from alembic.runtime.migration import MigrationContext
-from sqlalchemy import create_engine, delete, func, inspect, select, text
+from sqlalchemy import delete, func, inspect, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from sqlalchemy.schema import CreateSchema, DropSchema
 
 from alembic import command
 from src.models import Customer, OrderEvent, ServiceOrder
 from src.models.enums import BudgetDecision, EquipmentType, EventAction, OrderStatus
-
-
-@pytest.fixture
-def database():
-    url = os.getenv("TEST_DATABASE_URL")
-    if not url:
-        pytest.skip("Use make test-postgres para executar em banco isolado.")
-    # Schema aleatorio: nenhuma migration e aplicada ao schema public.
-    schema = f"repara_test_{uuid4().hex}"
-    admin = create_engine(url, hide_parameters=True)
-    with admin.begin() as connection:
-        connection.execute(CreateSchema(schema))
-    engine = create_engine(
-        url,
-        connect_args={"options": f"-csearch_path={schema} -ctimezone=UTC"},
-        hide_parameters=True,
-    )
-    config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
-    try:
-        with engine.begin() as connection:
-            config.attributes["connection"] = connection
-            command.upgrade(config, "head")
-        yield engine, config
-    finally:
-        engine.dispose()
-        with admin.begin() as connection:
-            connection.execute(DropSchema(schema, cascade=True))
-        admin.dispose()
 
 
 def create_order(session):

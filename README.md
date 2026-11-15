@@ -9,10 +9,10 @@ histórico do atendimento.
 
 ## Estado do projeto
 
-Base do backend implementada: FastAPI, endpoint `/health`, contratos de resposta,
+Backend com FastAPI, endpoint `/health`, CRUD de clientes, validação de dados,
 Ruff e comandos Make. A persistência inclui models de clientes, ordens e
 histórico, PostgreSQL em Docker e migration inicial com Alembic. Os endpoints
-do domínio, a interface e a execução completa dos três serviços ainda serão
+de ordens, a interface e a execução completa dos três serviços ainda serão
 implementados nas próximas tarefas.
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
@@ -46,7 +46,9 @@ make check-backend
 
 Esse comando reúne `make lint`, `make format-check` e `make test`.
 `make format` aplica a formatação e `make help` lista os comandos disponíveis.
-O teste HTTP usa o TestClient do FastAPI, sem servidor externo ou banco.
+Os testes HTTP usam o TestClient do FastAPI, sem servidor externo. O teste de
+saúde e os testes unitários não precisam de banco; os testes HTTP de clientes
+usam PostgreSQL na execução isolada descrita abaixo.
 
 ## PostgreSQL e migrations
 
@@ -65,10 +67,19 @@ Revise o `.env` criado antes de iniciar o banco; os valores são exemplos locais
 `db-current` deve mostrar `0001 (head)`. Se a porta 5432 estiver ocupada, ajuste
 DB_PORT e a porta de DATABASE_URL no `.env`. `make db-down` preserva o volume.
 
-`make test-postgres` executa os testes de banco em PostgreSQL temporário e
-isolado, sem tocar os dados de desenvolvimento. Os testes de banco são pulados
+`make test-postgres` executa toda a suíte do backend com PostgreSQL temporário e
+isolado, sem tocar os dados de desenvolvimento. Os testes que precisam de banco são pulados
 na execução local de `make test` quando TEST_DATABASE_URL não está definida.
 Veja o [modelo, as variáveis e os comandos de banco](docs/banco.md).
+
+## Clientes
+
+O Swagger em `/docs` permite cadastrar, listar, consultar, editar e excluir
+clientes. A listagem aceita busca por nome e paginação. Telefone com máscara é
+normalizado e e-mail é opcional e validado. Clientes com qualquer ordem vinculada
+não podem ser excluídos, retornando 409.
+
+Veja o [contrato e as regras da API de clientes](docs/clientes.md).
 
 ## Estrutura atual
 
@@ -78,8 +89,8 @@ backend/
     main.py        # aplicação FastAPI
     routers/       # rotas HTTP
     schemas/       # entrada e saída da API
-    services/      # regras de negócio, nas próximas tarefas
-    repositories/  # acesso aos dados, nas próximas tarefas
+    services/      # regras de negócio
+    repositories/  # acesso aos dados
     models/        # clientes, ordens e histórico
     core/          # configuração por ambiente
     database/      # base declarativa, conexão e sessões

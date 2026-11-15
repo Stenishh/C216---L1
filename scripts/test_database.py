@@ -54,7 +54,7 @@ def main() -> int:
     with temporary_database() as url:
         env = {**os.environ, "TEST_DATABASE_URL": url}
         return subprocess.run(
-            [sys.executable, "-m", "pytest", "tests/integration/test_database.py"],
+            [sys.executable, "-m", "pytest"],
             cwd=ROOT / "backend",
             env=env,
         ).returncode

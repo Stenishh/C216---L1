@@ -107,13 +107,15 @@ make test-postgres
 `TEST_DATABASE_URL`, os testes de banco são pulados com indicação para usar
 `make test-postgres`; os testes de saúde e configuração continuam sem Docker.
 
-`test-postgres` cria um projeto Compose exclusivo com sufixo aleatório, senha
+`test-postgres` executa toda a suíte do backend e cria um projeto Compose
+exclusivo com sufixo aleatório, senha
 temporária, porta livre e dados em `tmpfs`, usando `compose.test.yaml`. Cada
 teste também cria seu próprio schema, sem migrar o schema `public`. A suíte
 verifica upgrade, revisão head, compatibilidade com os models, downgrade e
 reupgrade, persistência entre conexões, valores inválidos e chaves estrangeiras.
 
-O runner remove seu contêiner e sua rede ao terminar, inclusive em falha dos
+Os testes HTTP de clientes compartilham a fixture de schema isolado, com uma
+sessão por requisição. O runner remove seu contêiner e sua rede ao terminar, inclusive em falha dos
 testes; os dados temporários deixam de existir. Não usa volumes persistentes,
 não executa `down -v` e não acessa o banco de desenvolvimento. Não é necessário
 configurar `.env` para esse comando.
