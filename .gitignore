@@ -1,0 +1,29 @@
+# Ambientes, ferramentas locais e dependencias
+.venv-tools/
+.venv/
+node_modules/
+
+# Configuracoes locais e segredos
+.env
+.env.*
+!.env.example
+
+# Caches e arquivos gerados
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+coverage/
+dist/
+playwright-report/
+test-results/
+*.db
+
+# Editores e sistema
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
