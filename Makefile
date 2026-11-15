@@ -2,9 +2,11 @@ POETRY ?= poetry
 HOST ?= 127.0.0.1
 PORT ?= 8000
 BACKEND_URL ?= http://$(HOST):$(PORT)
+COMPOSE ?= docker compose
 
 .DEFAULT_GOAL := help
 .PHONY: help install run health test lint format format-check check-backend
+.PHONY: env-init db-up db-down db-status db-upgrade db-current db-check db-migration test-postgres
 
 help:
 	@echo "make install       - instala dependencias do backend e de desenvolvimento"
@@ -15,6 +17,15 @@ help:
 	@echo "make format        - formata codigo com Ruff"
 	@echo "make format-check  - confere formatacao sem alterar arquivos"
 	@echo "make check-backend - executa lint, format-check e testes"
+	@echo "make env-init      - cria .env a partir do exemplo, sem sobrescrever"
+	@echo "make db-up         - inicia somente PostgreSQL e aguarda saude"
+	@echo "make db-down       - para PostgreSQL preservando o volume"
+	@echo "make db-status     - mostra o estado do banco"
+	@echo "make db-upgrade    - aplica migrations no banco configurado"
+	@echo "make db-current    - mostra a revisao atual"
+	@echo "make db-check      - confere models e migrations"
+	@echo "make db-migration msg=descricao - gera uma nova migration"
+	@echo "make test-postgres - valida migrations e integridade em banco efemero"
 
 install:
 	cd backend && $(POETRY) install --with dev
@@ -29,12 +40,40 @@ test:
 	cd backend && $(POETRY) run python -m pytest
 
 lint:
-	cd backend && $(POETRY) run ruff check src tests
+	cd backend && $(POETRY) run ruff check src tests alembic ../scripts
 
 format:
-	cd backend && $(POETRY) run ruff format src tests
+	cd backend && $(POETRY) run ruff format src tests alembic ../scripts
 
 format-check:
-	cd backend && $(POETRY) run ruff format --check src tests
+	cd backend && $(POETRY) run ruff format --check src tests alembic ../scripts
 
 check-backend: lint format-check test
+
+env-init:
+	cd backend && $(POETRY) run python -c "from pathlib import Path; p=Path('../.env'); p.exists() or p.write_bytes(Path('../.env.example').read_bytes())"
+
+db-up:
+	$(COMPOSE) up --detach --wait db
+
+db-down:
+	$(COMPOSE) down
+
+db-status:
+	$(COMPOSE) ps
+
+db-upgrade:
+	cd backend && $(POETRY) run alembic upgrade head
+
+db-current:
+	cd backend && $(POETRY) run alembic current
+
+db-check:
+	cd backend && $(POETRY) run alembic check
+
+db-migration:
+	$(if $(strip $(msg)),,$(error Informe msg=descricao))
+	cd backend && $(POETRY) run alembic revision --autogenerate -m "$(msg)"
+
+test-postgres:
+	cd backend && $(POETRY) run python ../scripts/test_database.py

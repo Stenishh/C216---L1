@@ -1,0 +1,18 @@
+# Banco temporario exclusivo para testes, sem volume persistente.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: repara_test
+      POSTGRES_USER: repara_test
+      POSTGRES_PASSWORD: ${TEST_DB_PASSWORD:?Senha temporaria fornecida pelo runner}
+    ports:
+      - "127.0.0.1::5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repara_test -d repara_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
