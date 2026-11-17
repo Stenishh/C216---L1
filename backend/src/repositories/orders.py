@@ -64,3 +64,24 @@ class OrderRepository:
     def delete(self, order: ServiceOrder) -> None:
         self.session.delete(order)
         self.session.flush()
+
+    def add_event(
+        self,
+        order: ServiceOrder,
+        action: EventAction,
+        previous_status: OrderStatus,
+        *,
+        observation: str | None = None,
+        approved_amount=None,
+    ) -> None:
+        self.session.add(
+            OrderEvent(
+                order_id=order.id,
+                action=action,
+                previous_status=previous_status,
+                resulting_status=order.status,
+                observation=observation,
+                approved_amount=approved_amount,
+            )
+        )
+        self.session.flush()

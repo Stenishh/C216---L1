@@ -9,6 +9,28 @@ from src.models.enums import BudgetDecision, EquipmentType, OrderStatus
 ShortText = Annotated[str, Field(min_length=1, max_length=100)]
 Problem = Annotated[str, Field(min_length=1, max_length=2000)]
 CustomerId = Annotated[int, Field(gt=0, strict=True)]
+BudgetAmount = Annotated[
+    Decimal, Field(ge=0, le=Decimal("999999.99"), max_digits=8, decimal_places=2)
+]
+
+
+class DiagnosisPatch(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    diagnosis: Problem | None = None
+    budget_amount: BudgetAmount | None = None
+
+    @model_validator(mode="after")
+    def validate_changes(self):
+        if not self.model_fields_set:
+            raise ValueError("Informe diagnóstico ou orçamento para atualizar.")
+        return self
+
+
+class BudgetRejection(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    reason: Annotated[str, Field(min_length=1, max_length=500)]
 
 
 class OrderCreate(BaseModel):

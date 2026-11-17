@@ -5,7 +5,13 @@ from sqlalchemy.orm import Session
 
 from src.database.session import get_db
 from src.repositories.orders import OrderRepository
-from src.schemas.orders import OrderCreate, OrderPatch, OrderRead
+from src.schemas.orders import (
+    BudgetRejection,
+    DiagnosisPatch,
+    OrderCreate,
+    OrderPatch,
+    OrderRead,
+)
 from src.services.orders import (
     OrderConflict,
     OrderCustomerNotFound,
@@ -70,3 +76,33 @@ def patch_order(order_id: OrderId, data: OrderPatch, service: Service):
 def delete_order(order_id: OrderId, service: Service):
     execute(service.delete, order_id)
     return Response(status_code=204)
+
+
+@router.post("/{order_id}/begin-diagnosis", response_model=OrderRead)
+def begin_diagnosis(order_id: OrderId, service: Service):
+    return execute(service.begin_diagnosis, order_id)
+
+
+@router.patch("/{order_id}/diagnosis", response_model=OrderRead)
+def update_diagnosis(order_id: OrderId, data: DiagnosisPatch, service: Service):
+    return execute(service.update_diagnosis, order_id, data)
+
+
+@router.post("/{order_id}/request-approval", response_model=OrderRead)
+def request_approval(order_id: OrderId, service: Service):
+    return execute(service.request_approval, order_id)
+
+
+@router.post("/{order_id}/approve-budget", response_model=OrderRead)
+def approve_budget(order_id: OrderId, service: Service):
+    return execute(service.approve_budget, order_id)
+
+
+@router.post("/{order_id}/reject-budget", response_model=OrderRead)
+def reject_budget(order_id: OrderId, data: BudgetRejection, service: Service):
+    return execute(service.reject_budget, order_id, data)
+
+
+@router.post("/{order_id}/start-repair", response_model=OrderRead)
+def start_repair(order_id: OrderId, service: Service):
+    return execute(service.start_repair, order_id)

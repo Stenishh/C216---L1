@@ -11,9 +11,10 @@ histórico do atendimento.
 
 Backend com FastAPI, endpoint `/health`, CRUD de clientes e ordens, validação de dados,
 Ruff e comandos Make. A persistência inclui models de clientes, ordens e
-histórico, PostgreSQL em Docker e migration inicial com Alembic. Os endpoints
-de atendimento, a interface e a execução completa dos três serviços ainda serão
-implementados nas próximas tarefas.
+histórico, PostgreSQL em Docker e migration inicial com Alembic. O atendimento
+permite diagnóstico, orçamento, aprovação/rejeição e início de reparo.
+Conclusão, entrega, cancelamento independente, consulta do histórico, interface
+e execução completa dos três serviços seguem nas próximas tarefas.
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
 
@@ -47,7 +48,7 @@ make check-backend
 Esse comando reúne `make lint`, `make format-check` e `make test`.
 `make format` aplica a formatação e `make help` lista os comandos disponíveis.
 Os testes HTTP usam o TestClient do FastAPI, sem servidor externo. O teste de
-saúde e os testes unitários não precisam de banco; os testes HTTP de clientes
+saúde e os testes unitários não precisam de banco; os testes HTTP de clientes e ordens
 usam PostgreSQL na execução isolada descrita abaixo.
 
 ## PostgreSQL e migrations
@@ -90,7 +91,10 @@ a exclusão exige apenas o evento inicial e também o remove. A listagem tem
 paginação e apresenta as ordens mais recentes primeiro.
 
 Veja o [contrato e as regras da API de ordens](docs/ordens.md).
-Diagnóstico, orçamento e transições de atendimento seguem nas próximas tarefas.
+O atendimento permite iniciar diagnóstico, preencher diagnóstico/orçamento,
+solicitar aprovação, registrar aprovação ou rejeição com motivo e iniciar reparo
+somente após aprovação. Valor zero é aceito; valores negativos ou com mais de
+duas casas decimais são rejeitados. Mudanças e eventos são persistidos juntos.
 
 ## Estrutura atual
 
