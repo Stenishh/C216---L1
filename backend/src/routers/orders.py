@@ -7,10 +7,14 @@ from src.database.session import get_db
 from src.repositories.orders import OrderRepository
 from src.schemas.orders import (
     BudgetRejection,
+    DeliveryConfirmation,
     DiagnosisPatch,
+    OrderCancellation,
     OrderCreate,
+    OrderEventRead,
     OrderPatch,
     OrderRead,
+    RepairPatch,
 )
 from src.services.orders import (
     OrderConflict,
@@ -106,3 +110,33 @@ def reject_budget(order_id: OrderId, data: BudgetRejection, service: Service):
 @router.post("/{order_id}/start-repair", response_model=OrderRead)
 def start_repair(order_id: OrderId, service: Service):
     return execute(service.start_repair, order_id)
+
+
+@router.patch("/{order_id}/repair", response_model=OrderRead)
+def update_repair(order_id: OrderId, data: RepairPatch, service: Service):
+    return execute(service.update_repair, order_id, data)
+
+
+@router.post("/{order_id}/complete-repair", response_model=OrderRead)
+def complete_repair(order_id: OrderId, service: Service):
+    return execute(service.complete_repair, order_id)
+
+
+@router.post("/{order_id}/deliver", response_model=OrderRead)
+def deliver(order_id: OrderId, data: DeliveryConfirmation, service: Service):
+    return execute(service.deliver, order_id)
+
+
+@router.post("/{order_id}/cancel", response_model=OrderRead)
+def cancel(order_id: OrderId, data: OrderCancellation, service: Service):
+    return execute(service.cancel, order_id, data)
+
+
+@router.get("/{order_id}/history", response_model=list[OrderEventRead])
+def order_history(
+    order_id: OrderId,
+    service: Service,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+):
+    return execute(service.history, order_id, offset, limit)

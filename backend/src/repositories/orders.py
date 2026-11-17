@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -85,3 +87,14 @@ class OrderRepository:
             )
         )
         self.session.flush()
+
+    def list_events(self, order_id: int, offset: int, limit: int) -> list[OrderEvent]:
+        return list(
+            self.session.scalars(
+                select(OrderEvent)
+                .where(OrderEvent.order_id == order_id)
+                .order_by(OrderEvent.id)
+                .offset(offset)
+                .limit(limit)
+            )
+        )

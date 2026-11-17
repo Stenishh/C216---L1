@@ -2,7 +2,14 @@ from sqlalchemy.exc import IntegrityError
 
 from src.models.enums import BudgetDecision, EventAction, OrderStatus
 from src.repositories.orders import OrderRepository
-from src.schemas.orders import BudgetRejection, DiagnosisPatch, OrderCreate, OrderPatch
+from src.schemas.orders import (
+    BudgetRejection,
+    DiagnosisPatch,
+    OrderCancellation,
+    OrderCreate,
+    OrderPatch,
+    RepairPatch,
+)
 
 
 class OrderNotFound(Exception):
@@ -163,3 +170,50 @@ class OrderService:
         return self._record_action(
             order, EventAction.START_REPAIR, OrderStatus.AWAITING_APPROVAL
         )
+
+    def update_repair(self, order_id: int, data: RepairPatch):
+        order = self._require_status(order_id, OrderStatus.IN_REPAIR)
+        try:
+            updated = self.repository.update(order, data.model_dump())
+            self.repository.session.commit()
+            return updated
+        except Exception:
+            self.repository.session.rollback()
+            raise
+
+    def complete_repair(self, order_id: int):
+        order = self._require_status(order_id, OrderStatus.IN_REPAIR)
+        if not order.service_performed or not order.service_performed.strip():
+            raise OrderConflict(
+                "Informe o serviço realizado antes de concluir o reparo."
+            )
+        order.status = OrderStatus.COMPLETED
+        return self._record_action(
+            order, EventAction.COMPLETE_REPAIR, OrderStatus.IN_REPAIR
+        )
+
+    def deliver(self, order_id: int):
+        order = self._require_status(order_id, OrderStatus.COMPLETED)
+        order.status = OrderStatus.DELIVERED
+        return self._record_action(order, EventAction.DELIVER, OrderStatus.COMPLETED)
+
+    def cancel(self, order_id: int, data: OrderCancellation):
+        order = self.get(order_id, lock=True)
+        if order.status not in (
+            OrderStatus.RECEIVED,
+            OrderStatus.IN_DIAGNOSIS,
+            OrderStatus.AWAITING_APPROVAL,
+        ):
+            raise OrderConflict(
+                "Só é possível cancelar uma ordem antes do início do reparo."
+            )
+        previous_status = order.status
+        order.status = OrderStatus.CANCELLED
+        order.cancellation_reason = data.reason
+        return self._record_action(
+            order, EventAction.CANCEL, previous_status, observation=data.reason
+        )
+
+    def history(self, order_id: int, offset: int = 0, limit: int = 20):
+        self.get(order_id)
+        return self.repository.list_events(order_id, offset, limit)

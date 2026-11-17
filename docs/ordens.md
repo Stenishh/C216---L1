@@ -101,8 +101,55 @@ e no evento. Aprovação registra o valor aprovado no evento e mantém o status
 Repetir uma ação concluída, decidir novamente ou iniciar reparo sem aprovação
 retorna 409, sem evento adicional. As ações bloqueiam a linha da ordem durante
 a transação e salvam mudança e evento juntos. Edições de diagnóstico/orçamento
-não geram eventos textuais. Conclusão, entrega, cancelamento independente e
-consulta do histórico pela API ficam para a tarefa 07.
+não geram eventos textuais.
+
+## Reparo, conclusão, entrega e cancelamento
+
+| Método | Caminho (após `/orders/{id}`) | Regra |
+| --- | --- | --- |
+| PATCH | `/repair` | Edita serviço realizado somente Em reparo |
+| POST | `/complete-repair` | Em reparo → Concluída; exige serviço realizado |
+| POST | `/deliver` | Concluída → Entregue; exige confirmação explícita |
+| POST | `/cancel` | Recebida, Em diagnóstico ou Aguardando aprovação → Cancelada; exige motivo |
+| GET | `/history` | Consulta eventos em ordem de ocorrência, com paginação |
+
+PATCH `/orders/1/repair` recebe `{"service_performed": "Fonte substituída"}`.
+O campo é obrigatório no corpo, aceita de 1 a 2.000 caracteres após remover
+espaços das extremidades e pode ser limpo com `null` durante o reparo.
+Concluir sem serviço preenchido retorna 409. Edição textual não gera evento.
+Depois da conclusão, o serviço fica bloqueado.
+
+POST `/orders/1/complete-repair` não recebe corpo. POST `/orders/1/deliver`
+recebe `{"confirmed": true}`; ausência, `false`, números e strings retornam 422.
+A interface deverá pedir confirmação ao operador antes de enviar a entrega.
+
+POST `/orders/1/cancel` recebe `{"reason": "Cliente desistiu do atendimento"}`,
+com motivo de 1 a 500 caracteres após remover espaços das extremidades.
+Cancelamento preserva diagnóstico, orçamento, decisão existente e histórico;
+não registra rejeição de orçamento. É permitido cancelar mesmo após aprovação,
+desde que o reparo ainda não tenha começado. Após o início do reparo retorna 409.
+
+Conclusão, entrega e cancelamento geram evento com status anterior, resultante
+e data UTC. Cancelamento registra também o motivo na ordem e no evento.
+As alterações e o evento são salvos juntos, com rollback em caso de falha.
+Entregue e Cancelada são estados finais, sem reabertura ou exclusão. Concluída
+permite apenas a entrega. Ações repetidas retornam 409, sem novo evento.
+
+## Consulta do histórico
+
+GET `/orders/1/history` retorna uma lista de eventos da ordem, do mais antigo
+ao mais recente, ordenada por ID. Aceita `offset` (mínimo 0) e `limit` (1 a 100,
+padrão 20); offset além do fim retorna lista vazia. Ordem inexistente retorna
+404. Cada evento contém:
+
+- `id`, `order_id` e `action`;
+- `previous_status` (nulo apenas na abertura) e `resulting_status`;
+- `created_at` em UTC;
+- `observation` quando aplicável, incluindo motivo de rejeição/cancelamento;
+- `approved_amount` para aprovação, serializado como string decimal.
+
+Histórico é somente leitura. POST, PUT, PATCH e DELETE em `/history` retornam
+405; não há endpoints de edição ou exclusão individual de eventos.
 
 ## Validação
 
@@ -112,3 +159,7 @@ incluindo CRUD HTTP, persistência em nova conexão, evento inicial, cascata,
 rollback, cliente inexistente, validações e bloqueios de edição/exclusão.
 Os testes de orçamento cobrem valores limite, fluxo até reparo, rejeição com
 motivo, estados inválidos, repetição de ações e rollback quando o evento falha.
+Os testes de atendimento cobrem o fluxo até entrega, cancelamento nos estados
+permitidos, imutabilidade dos estados finais, confirmação de entrega,
+paginação e isolamento do histórico, rollback das novas transições e disputa
+simultânea entre cancelamento e início de reparo.

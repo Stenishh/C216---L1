@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from src.models.enums import BudgetDecision, EquipmentType, OrderStatus
+from src.models.enums import BudgetDecision, EquipmentType, EventAction, OrderStatus
 
 ShortText = Annotated[str, Field(min_length=1, max_length=100)]
 Problem = Annotated[str, Field(min_length=1, max_length=2000)]
@@ -31,6 +31,41 @@ class BudgetRejection(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
 
     reason: Annotated[str, Field(min_length=1, max_length=500)]
+
+
+class OrderCancellation(BudgetRejection):
+    pass
+
+
+class RepairPatch(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True, extra="forbid")
+
+    service_performed: Problem | None
+
+
+class DeliveryConfirmation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    confirmed: Annotated[bool, Field(strict=True)]
+
+    @model_validator(mode="after")
+    def require_confirmation(self):
+        if not self.confirmed:
+            raise ValueError("Confirme a entrega do equipamento.")
+        return self
+
+
+class OrderEventRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    order_id: int
+    action: EventAction
+    previous_status: OrderStatus | None
+    resulting_status: OrderStatus
+    observation: str | None
+    approved_amount: Decimal | None
+    created_at: datetime
 
 
 class OrderCreate(BaseModel):

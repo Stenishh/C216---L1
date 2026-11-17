@@ -12,9 +12,9 @@ histórico do atendimento.
 Backend com FastAPI, endpoint `/health`, CRUD de clientes e ordens, validação de dados,
 Ruff e comandos Make. A persistência inclui models de clientes, ordens e
 histórico, PostgreSQL em Docker e migration inicial com Alembic. O atendimento
-permite diagnóstico, orçamento, aprovação/rejeição e início de reparo.
-Conclusão, entrega, cancelamento independente, consulta do histórico, interface
-e execução completa dos três serviços seguem nas próximas tarefas.
+permite diagnóstico, orçamento, aprovação/rejeição, reparo, conclusão, entrega,
+cancelamento e consulta do histórico. A interface e a execução completa dos
+três serviços seguem nas próximas tarefas.
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
 
@@ -95,6 +95,12 @@ O atendimento permite iniciar diagnóstico, preencher diagnóstico/orçamento,
 solicitar aprovação, registrar aprovação ou rejeição com motivo e iniciar reparo
 somente após aprovação. Valor zero é aceito; valores negativos ou com mais de
 duas casas decimais são rejeitados. Mudanças e eventos são persistidos juntos.
+
+Durante o reparo, é possível registrar o serviço realizado, obrigatório para
+concluir. Entrega exige ordem concluída e confirmação explícita. Cancelamento
+exige motivo e só é permitido antes do início do reparo. Estados finais ficam
+disponíveis apenas para consulta. O histórico em `/orders/{id}/history` é
+somente leitura, com paginação e eventos em ordem de ocorrência.
 
 ## Estrutura atual
 
