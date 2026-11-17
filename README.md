@@ -9,10 +9,10 @@ histórico do atendimento.
 
 ## Estado do projeto
 
-Backend com FastAPI, endpoint `/health`, CRUD de clientes, validação de dados,
+Backend com FastAPI, endpoint `/health`, CRUD de clientes e ordens, validação de dados,
 Ruff e comandos Make. A persistência inclui models de clientes, ordens e
 histórico, PostgreSQL em Docker e migration inicial com Alembic. Os endpoints
-de ordens, a interface e a execução completa dos três serviços ainda serão
+de atendimento, a interface e a execução completa dos três serviços ainda serão
 implementados nas próximas tarefas.
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
@@ -80,6 +80,17 @@ normalizado e e-mail é opcional e validado. Clientes com qualquer ordem vincula
 não podem ser excluídos, retornando 409.
 
 Veja o [contrato e as regras da API de clientes](docs/clientes.md).
+
+## Ordens de serviço
+
+O Swagger permite abrir, listar, consultar, editar (PUT/PATCH) e excluir ordens
+sem andamento. A abertura exige cliente existente e registra um evento inicial
+na mesma transação. Dados de abertura só podem ser editados no status Recebida;
+a exclusão exige apenas o evento inicial e também o remove. A listagem tem
+paginação e apresenta as ordens mais recentes primeiro.
+
+Veja o [contrato e as regras da API de ordens](docs/ordens.md).
+Diagnóstico, orçamento e transições de atendimento seguem nas próximas tarefas.
 
 ## Estrutura atual
 

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from src.routers.customers import router as customers_router
 from src.routers.health import router as health_router
+from src.routers.orders import router as orders_router
 
 app = FastAPI(
     title="Repara API",
@@ -10,3 +11,4 @@ app = FastAPI(
 )
 app.include_router(health_router)
 app.include_router(customers_router)
+app.include_router(orders_router)
