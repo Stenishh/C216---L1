@@ -2,7 +2,9 @@
 
 O CRUD de clientes está disponível no Swagger em `/docs`, no grupo Clientes.
 O backend usa rotas HTTP, serviço de negócio, repositório SQLAlchemy e schemas
-Pydantic. A interface de clientes será desenvolvida na tarefa 09.
+Pydantic. A interface React em `/customers` permite listar, cadastrar,
+consultar, editar e excluir clientes com confirmação. Erros de vínculo são
+exibidos sem remover o cadastro; falhas ao salvar preservam o formulário.
 
 ## Rotas
 
@@ -80,8 +82,12 @@ continua podendo ter nome e contato editados, conforme o escopo aprovado.
 ## Execução e testes
 
 Siga a preparação do PostgreSQL em [Banco de dados](banco.md) e inicie a API
-com `make run`. Use o Swagger para executar o CRUD. Nesta etapa não há tela
-React, autenticação ou operações de ordens disponíveis pela API.
+com `make run` e a interface com `make frontend-run`. Use a área Clientes ou o
+Swagger para executar o CRUD. Não há autenticação nesta versão.
+
+`make frontend-test` verifica os fluxos com HTTP simulado: cadastro, consulta,
+edição e remoção de e-mail, confirmação/exclusão, conflito de vínculo,
+paginação, preservação após falha, nova tentativa e bloqueio durante envio.
 
 `make check-backend` verifica Ruff e os testes locais, incluindo normalização,
 validação dos schemas e regras de serviço. Testes que dependem de PostgreSQL

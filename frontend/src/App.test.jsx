@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import App from "./App";
 
 it("navega entre as áreas de atendimento", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response("[]")));
   const user = userEvent.setup();
   render(
     <MemoryRouter>

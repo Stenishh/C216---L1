@@ -1,4 +1,10 @@
 import { Navigate, NavLink, Route, Routes } from "react-router-dom";
+import {
+  CustomerDetail,
+  CustomerEdit,
+  CustomerForm,
+  CustomerList,
+} from "./pages/Customers";
 
 export default function App() {
   return (
@@ -24,7 +30,10 @@ export default function App() {
       >
         <Routes>
           <Route path="/" element={<Navigate to="/orders" replace />} />
-          <Route path="/customers" element={<Placeholder title="Clientes" />} />
+          <Route path="/customers" element={<CustomerList />} />
+          <Route path="/customers/new" element={<CustomerForm />} />
+          <Route path="/customers/:id" element={<CustomerDetail />} />
+          <Route path="/customers/:id/edit" element={<CustomerEdit />} />
           <Route
             path="/orders"
             element={<Placeholder title="Ordens de serviço" />}

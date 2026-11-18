@@ -39,6 +39,15 @@ CORS explícito. Docker e implantação serão tratados na atividade 12.
 
 ## Organização e validação
 
+A área **Clientes** permite listar registros paginados, cadastrar, consultar
+contatos e data de cadastro, editar os dados (PUT) e excluir com confirmação.
+E-mail vazio é enviado como `null`. A API continua sendo a autoridade sobre
+as regras de negócio, incluindo exclusão protegida por vínculos.
+Erros aparecem junto da operação; o formulário mantém os dados em falhas.
+Requisições de leitura são canceladas ao sair da tela e respostas antigas
+não substituem a página atual. Durante o salvamento, campos e botões de envio
+ficam desabilitados, com bloqueio adicional contra chamadas duplicadas.
+
 `src/api/http.js` centraliza fetch, JSON, respostas 204, falhas de rede,
 mensagens de conflito/validação e cancelamento. Os componentes não fazem
 tratamento HTTP duplicado. `App.jsx` reúne navegação e rotas, com página
@@ -46,3 +55,13 @@ desconhecida e link para pular ao conteúdo. Não há autenticação nesta vers�
 
 Vitest usa jsdom e Testing Library; as respostas HTTP são simuladas, sem
 acesso ao banco local. E2E com os três serviços reais pertence à atividade 13.
+
+### Dependências de desenvolvimento
+
+Em 18/11/2026, `npm audit` aponta cinco entradas de alta severidade derivadas
+de uma única vulnerabilidade ReDoS em `picomatch` (GHSA-fc5q-39xc-vjpf),
+dependência transitiva de Vite/Vitest. A versão mais recente publicada,
+4.0.7, ainda consta como afetada. O pacote é usado em desenvolvimento/build,
+não no bundle de execução. Reavalie com `npm audit` ao atualizar o lockfile;
+não aplique `audit fix --force`, que sugere regressões de versões sem resolver
+adequadamente a árvore atual.
