@@ -48,6 +48,29 @@ Requisições de leitura são canceladas ao sair da tela e respostas antigas
 não substituem a página atual. Durante o salvamento, campos e botões de envio
 ficam desabilitados, com bloqueio adicional contra chamadas duplicadas.
 
+A área **Ordens de serviço** permite abrir, listar, consultar, editar e excluir
+ordens sem andamento. O seletor de clientes aceita busca por nome e paginação,
+mantendo a seleção ao mudar de página. O detalhe apresenta equipamento,
+contato do cliente, diagnóstico, orçamento, decisão, serviço e histórico paginado.
+
+As ações acompanham o estado recebido da API: iniciar diagnóstico, salvar
+diagnóstico/orçamento, solicitar aprovação, aprovar/rejeitar, iniciar reparo,
+salvar serviço, concluir, entregar e cancelar antes do reparo. Solicitação de
+aprovação, decisão, conclusão, entrega, cancelamento e exclusão pedem confirmação;
+rejeição e cancelamento também exigem motivo. Entrega envia `confirmed: true`
+somente após confirmar. Estados finais oferecem apenas consulta.
+
+Salve os textos e o orçamento antes de prosseguir. Valores monetários são
+enviados como strings decimais, inclusive zero, sem arredondamento no cliente.
+O histórico é recarregado após as transições. Em conflito por alteração em
+outra sessão, a mensagem da API aparece e o botão **Atualizar dados da ordem**
+permite consultar o estado atual (descartando edições locais não salvas).
+
+Os testes cobrem CRUD de ordens, orçamento zero no fluxo até entrega,
+rejeição/cancelamento com motivo, confirmação de exclusão, estados finais,
+paginação do histórico, preservação em falha e bloqueio de envio duplicado.
+Testes de leitura também verificam cancelamento e respostas fora de ordem.
+
 `src/api/http.js` centraliza fetch, JSON, respostas 204, falhas de rede,
 mensagens de conflito/validação e cancelamento. Os componentes não fazem
 tratamento HTTP duplicado. `App.jsx` reúne navegação e rotas, com página

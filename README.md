@@ -14,8 +14,9 @@ Ruff e comandos Make. A persistência inclui models de clientes, ordens e
 histórico, PostgreSQL em Docker e migration inicial com Alembic. O atendimento
 permite diagnóstico, orçamento, aprovação/rejeição, reparo, conclusão, entrega,
 cancelamento e consulta do histórico. A base da interface usa React, Vite,
-Tailwind e Biome, com navegação, cliente HTTP e CRUD completo de clientes.
-As telas de ordens e a execução completa dos três serviços seguem nas próximas tarefas.
+Tailwind e Biome, com navegação, cliente HTTP, CRUD de clientes e ordens e
+fluxo completo de atendimento com histórico e confirmações. A execução completa
+dos três serviços em Docker segue na atividade 12.
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
 
@@ -120,6 +121,8 @@ backend/
   tests/integration/
   tests/unit/
 docs/escopo.md     # escopo aprovado e regras planejadas
+frontend/         # React, Vite, Tailwind, cliente HTTP e testes de interface
+docs/frontend.md  # execução local, configuração pública e fluxos da interface
 docs/banco.md      # modelo, configuração e validação do banco
 compose.yaml      # PostgreSQL de desenvolvimento
 compose.test.yaml # PostgreSQL temporário para testes

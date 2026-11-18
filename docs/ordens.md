@@ -1,6 +1,9 @@
 # API de ordens de serviço
 
 Os endpoints estão disponíveis no Swagger em `/docs`.
+O frontend em `/orders` oferece listagem, abertura, detalhe, edição e exclusão,
+além de todas as ações de atendimento abaixo. Execute `make frontend-run` com
+a API e o banco preparados; veja [Interface Repara](frontend.md).
 
 | Método | Caminho | Resultado |
 | --- | --- | --- |

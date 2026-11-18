@@ -282,7 +282,7 @@ export function CustomerForm({ customer }) {
               type="tel"
               required
               maxLength={20}
-              pattern="[0-9() \-]{10,20}"
+              pattern="[0-9\(\) \-]{10,20}"
               title="Informe DDD e telefone com 10 ou 11 dígitos; máscara é opcional."
               autoComplete="tel-national"
             />

@@ -16,11 +16,18 @@ export function useResource(path) {
     setState({ path, revision, data: null, loading: true, error: "" });
     request(path, { signal: controller.signal }).then(
       (data) => {
-        if (active) setState({ path, data, loading: false, error: "" });
+        if (active)
+          setState({ path, revision, data, loading: false, error: "" });
       },
       (error) => {
         if (active && error.name !== "AbortError")
-          setState({ path, data: null, loading: false, error: error.message });
+          setState({
+            path,
+            revision,
+            data: null,
+            loading: false,
+            error: error.message,
+          });
       },
     );
     return () => {
@@ -29,7 +36,9 @@ export function useResource(path) {
     };
   }, [path, revision]);
   return {
-    ...(state.path === path ? state : { data: null, loading: true, error: "" }),
+    ...(state.path === path && state.revision === revision
+      ? state
+      : { data: null, loading: true, error: "" }),
     reload,
   };
 }

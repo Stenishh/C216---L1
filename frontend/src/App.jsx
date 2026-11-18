@@ -5,6 +5,8 @@ import {
   CustomerForm,
   CustomerList,
 } from "./pages/Customers";
+import { OrderDetail } from "./pages/OrderDetail";
+import { OrderEdit, OrderForm, OrderList } from "./pages/Orders";
 
 export default function App() {
   return (
@@ -34,10 +36,10 @@ export default function App() {
           <Route path="/customers/new" element={<CustomerForm />} />
           <Route path="/customers/:id" element={<CustomerDetail />} />
           <Route path="/customers/:id/edit" element={<CustomerEdit />} />
-          <Route
-            path="/orders"
-            element={<Placeholder title="Ordens de serviço" />}
-          />
+          <Route path="/orders" element={<OrderList />} />
+          <Route path="/orders/new" element={<OrderForm />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
+          <Route path="/orders/:id/edit" element={<OrderEdit />} />
           <Route
             path="*"
             element={
@@ -50,14 +52,5 @@ export default function App() {
         </Routes>
       </main>
     </>
-  );
-}
-
-function Placeholder({ title }) {
-  return (
-    <section>
-      <h1>{title}</h1>
-      <p>Esta área será implementada na próxima etapa.</p>
-    </section>
   );
 }
