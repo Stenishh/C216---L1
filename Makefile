@@ -3,12 +3,19 @@ HOST ?= 127.0.0.1
 PORT ?= 8000
 BACKEND_URL ?= http://$(HOST):$(PORT)
 COMPOSE ?= docker compose
+NPM ?= npm
 
 .DEFAULT_GOAL := help
 .PHONY: help install run health test lint format format-check check-backend
 .PHONY: env-init db-up db-down db-status db-upgrade db-current db-check db-migration test-postgres
+.PHONY: frontend-install frontend-run frontend-check frontend-test frontend-build
 
 help:
+	@echo "make frontend-install - instala dependencias do frontend pelo lockfile"
+	@echo "make frontend-run     - inicia interface com proxy local para a API"
+	@echo "make frontend-check   - verifica JavaScript, JSX e formatacao com Biome"
+	@echo "make frontend-test    - executa Vitest e Testing Library"
+	@echo "make frontend-build   - gera build de producao da interface"
 	@echo "make install       - instala dependencias do backend e de desenvolvimento"
 	@echo "make run           - inicia a API local com recarregamento"
 	@echo "make health        - consulta a saude da API em execucao"
@@ -77,3 +84,18 @@ db-migration:
 
 test-postgres:
 	cd backend && $(POETRY) run python ../scripts/test_database.py
+
+frontend-install:
+	cd frontend && $(NPM) ci
+
+frontend-run:
+	cd frontend && $(NPM) run dev
+
+frontend-check:
+	cd frontend && $(NPM) run check
+
+frontend-test:
+	cd frontend && $(NPM) test
+
+frontend-build:
+	cd frontend && $(NPM) run build

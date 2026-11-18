@@ -1,0 +1,54 @@
+import { Navigate, NavLink, Route, Routes } from "react-router-dom";
+
+export default function App() {
+  return (
+    <>
+      <a className="skip-link" href="#content">
+        Ir para o conteúdo
+      </a>
+      <header className="app-header">
+        <div className="header-inner">
+          <NavLink className="brand" to="/orders">
+            repara<span>Assistência técnica</span>
+          </NavLink>
+          <nav aria-label="Navegação principal">
+            <NavLink to="/orders">Ordens de serviço</NavLink>
+            <NavLink to="/customers">Clientes</NavLink>
+          </nav>
+        </div>
+      </header>
+      <main
+        id="content"
+        tabIndex={-1}
+        className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8"
+      >
+        <Routes>
+          <Route path="/" element={<Navigate to="/orders" replace />} />
+          <Route path="/customers" element={<Placeholder title="Clientes" />} />
+          <Route
+            path="/orders"
+            element={<Placeholder title="Ordens de serviço" />}
+          />
+          <Route
+            path="*"
+            element={
+              <>
+                <h1>Página não encontrada</h1>
+                <NavLink to="/orders">Voltar às ordens</NavLink>
+              </>
+            }
+          />
+        </Routes>
+      </main>
+    </>
+  );
+}
+
+function Placeholder({ title }) {
+  return (
+    <section>
+      <h1>{title}</h1>
+      <p>Esta área será implementada na próxima etapa.</p>
+    </section>
+  );
+}

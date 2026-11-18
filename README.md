@@ -13,8 +13,9 @@ Backend com FastAPI, endpoint `/health`, CRUD de clientes e ordens, validação 
 Ruff e comandos Make. A persistência inclui models de clientes, ordens e
 histórico, PostgreSQL em Docker e migration inicial com Alembic. O atendimento
 permite diagnóstico, orçamento, aprovação/rejeição, reparo, conclusão, entrega,
-cancelamento e consulta do histórico. A interface e a execução completa dos
-três serviços seguem nas próximas tarefas.
+cancelamento e consulta do histórico. A base da interface usa React, Vite,
+Tailwind e Biome, com navegação e cliente HTTP testados. As telas e a execução
+completa dos três serviços seguem nas próximas tarefas.
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
 
@@ -126,5 +127,12 @@ scripts/          # runner de testes com banco isolado
 Makefile          # instalação, execução e validação
 ```
 
-Instruções de frontend, Docker da aplicação completa, CI e vídeo serão acrescentadas
-conforme essas etapas forem implementadas e verificadas.
+## Frontend
+
+Com Node.js 22.12+ e npm, execute `make frontend-install` e
+`make frontend-run`. A interface abre em http://127.0.0.1:5173 e encaminha
+`/api` à API local na porta 8000. Valide com `make frontend-check`,
+`make frontend-test` e `make frontend-build`.
+
+Veja [configuração, comandos e testes do frontend](docs/frontend.md).
+Docker da aplicação completa, CI e vídeo serão acrescentados nas próximas etapas.
