@@ -11,6 +11,8 @@ NPM ?= npm
 .PHONY: frontend-install frontend-run frontend-check frontend-test frontend-build
 
 help:
+	@echo "make check-all - Ruff, PostgreSQL, Biome, Vitest, build e E2E real"
+	@echo "make e2e - stack efemera isolada e Playwright sem mocks"
 	@echo "make up-build / ps / down - opera frontend, API e banco em Docker"
 	@echo "make db-upgrade-local / db-current-local - migrations pelo Python local"
 	@echo "make e2e-install - instala Chromium para testes E2E"
@@ -121,3 +123,9 @@ db-current-local:
 
 e2e-install:
 	cd frontend && $(NPM) exec playwright install chromium
+
+.PHONY: e2e check-all
+e2e:
+	cd backend && $(POETRY) run python ../scripts/test_e2e.py
+
+check-all: lint format-check test-postgres frontend-check frontend-test frontend-build e2e

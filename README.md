@@ -67,7 +67,7 @@ make test-postgres
 ```
 
 Revise o `.env` criado antes de iniciar o banco; os valores são exemplos locais.
-`db-current` deve mostrar `0001 (head)`. Se a porta 5432 estiver ocupada, ajuste
+`db-current-local` deve mostrar `0001 (head)`. Se a porta 5432 estiver ocupada, ajuste
 DB_PORT e a porta de DATABASE_URL no `.env`. `make db-down` preserva o volume.
 
 `make test-postgres` executa toda a suíte do backend com PostgreSQL temporário e
@@ -140,3 +140,6 @@ Com Node.js 22.12+ e npm, execute `make frontend-install` e
 Veja [configuração, comandos e testes do frontend](docs/frontend.md).
 Para a aplicação completa, veja [Docker](docs/docker.md). Vídeo e revisão da
 entrega seguem na atividade 14.
+
+`make check-all` valida backend, frontend e E2E real com PostgreSQL isolado.
+Veja [preparação, isolamento e CI](docs/testes.md).

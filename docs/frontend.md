@@ -77,14 +77,11 @@ tratamento HTTP duplicado. `App.jsx` reúne navegação e rotas, com página
 desconhecida e link para pular ao conteúdo. Não há autenticação nesta versão.
 
 Vitest usa jsdom e Testing Library; as respostas HTTP são simuladas, sem
-acesso ao banco local. E2E com os três serviços reais pertence à atividade 13.
+acesso ao banco local. Os testes Playwright usam os três serviços reais em
+stack isolada; veja [testes e CI](testes.md).
 
 ### Dependências de desenvolvimento
 
-Em 18/11/2026, `npm audit` aponta cinco entradas de alta severidade derivadas
-de uma única vulnerabilidade ReDoS em `picomatch` (GHSA-fc5q-39xc-vjpf),
-dependência transitiva de Vite/Vitest. A versão mais recente publicada,
-4.0.7, ainda consta como afetada. O pacote é usado em desenvolvimento/build,
-não no bundle de execução. Reavalie com `npm audit` ao atualizar o lockfile;
-não aplique `audit fix --force`, que sugere regressões de versões sem resolver
-adequadamente a árvore atual.
+Em 24/11/2026, a instalação do Playwright e a auditoria da árvore atual
+retornaram zero vulnerabilidades. Reavalie com `npm audit` ao atualizar o
+lockfile. Não aplique correções forçadas sem revisar mudanças de versões.

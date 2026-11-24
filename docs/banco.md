@@ -50,8 +50,8 @@ Na raiz do repositório:
 make install
 make env-init
 make db-up
-make db-upgrade
-make db-current
+make db-upgrade-local
+make db-current-local
 make db-check
 make db-status
 ```
@@ -59,7 +59,7 @@ make db-status
 `env-init` copia `.env.example` para `.env` somente se o arquivo ainda não
 existir. Revise os valores antes de iniciar o banco. O Alembic e a configuração
 Python leem o `.env` da raiz sem substituir variáveis já definidas no ambiente.
-`db-current` deve indicar `0001 (head)`; `db-check` confirma ausência de
+`db-current-local` deve indicar `0001 (head)`; `db-check` confirma ausência de
 diferenças entre models e migrations.
 
 | Variável | Uso |
@@ -76,8 +76,9 @@ fallback: operações de banco exigem `DATABASE_URL` válida.
 
 Se a porta 5432 estiver ocupada, altere **DB_PORT e a porta de DATABASE_URL**
 no `.env` para o mesmo valor livre, por exemplo 5434. Alterar somente DB_PORT
-não modifica automaticamente a URL do Python. Em uma futura API em contêiner,
-o host será `db` e a porta interna será sempre 5432.
+não modifica automaticamente a URL do Python. Na API em contêiner,
+o Compose usa o host `db` e a porta interna 5432. Para a stack completa,
+veja [Docker](docker.md).
 
 `make db-down` encerra o projeto `repara` e preserva seu volume `repara-data`.
 Credenciais POSTGRES_* inicializam um volume novo: mudar essas variáveis não
@@ -89,7 +90,7 @@ Depois de alterar os models e com o banco no head atual:
 
 ```bash
 make db-migration msg="descricao_da_alteracao"
-make db-upgrade
+make db-upgrade-local
 make db-check
 ```
 

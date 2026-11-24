@@ -1,0 +1,46 @@
+name: Projeto Repara
+
+on:
+  push:
+    branches: [main, projeto-final]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'scripts/**'
+      - 'compose*.yaml'
+      - 'Makefile'
+      - '.env.example'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-all:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: pip install poetry==2.4.3
+      - run: make install frontend-install
+      - run: cd frontend && npx playwright install --with-deps chromium
+      - run: make check-all
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-failure
+          path: |
+            frontend/playwright-report
+            frontend/test-results
+          if-no-files-found: ignore
