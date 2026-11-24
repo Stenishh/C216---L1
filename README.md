@@ -16,7 +16,7 @@ permite diagnóstico, orçamento, aprovação/rejeição, reparo, conclusão, en
 cancelamento e consulta do histórico. A base da interface usa React, Vite,
 Tailwind e Biome, com navegação, cliente HTTP, CRUD de clientes e ordens e
 fluxo completo de atendimento com histórico e confirmações. A execução completa
-dos três serviços em Docker segue na atividade 12.
+dos três serviços em Docker está em [Execução com Docker](docs/docker.md).
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
 
@@ -60,8 +60,8 @@ Com Docker e Compose v2 ativos:
 ```bash
 make env-init
 make db-up
-make db-upgrade
-make db-current
+make db-upgrade-local
+make db-current-local
 make db-check
 make test-postgres
 ```
@@ -138,4 +138,5 @@ Com Node.js 22.12+ e npm, execute `make frontend-install` e
 `make frontend-test` e `make frontend-build`.
 
 Veja [configuração, comandos e testes do frontend](docs/frontend.md).
-Docker da aplicação completa, CI e vídeo serão acrescentados nas próximas etapas.
+Para a aplicação completa, veja [Docker](docs/docker.md). Vídeo e revisão da
+entrega seguem na atividade 14.

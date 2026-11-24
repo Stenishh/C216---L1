@@ -11,6 +11,9 @@ NPM ?= npm
 .PHONY: frontend-install frontend-run frontend-check frontend-test frontend-build
 
 help:
+	@echo "make up-build / ps / down - opera frontend, API e banco em Docker"
+	@echo "make db-upgrade-local / db-current-local - migrations pelo Python local"
+	@echo "make e2e-install - instala Chromium para testes E2E"
 	@echo "make frontend-install - instala dependencias do frontend pelo lockfile"
 	@echo "make frontend-run     - inicia interface com proxy local para a API"
 	@echo "make frontend-check   - verifica JavaScript, JSX e formatacao com Biome"
@@ -70,10 +73,10 @@ db-status:
 	$(COMPOSE) ps
 
 db-upgrade:
-	cd backend && $(POETRY) run alembic upgrade head
+	$(COMPOSE) exec -T api alembic upgrade head
 
 db-current:
-	cd backend && $(POETRY) run alembic current
+	$(COMPOSE) exec -T api alembic current
 
 db-check:
 	cd backend && $(POETRY) run alembic check
@@ -99,3 +102,22 @@ frontend-test:
 
 frontend-build:
 	cd frontend && $(NPM) run build
+
+.PHONY: up-build ps down db-upgrade-local db-current-local e2e-install
+up-build:
+	$(COMPOSE) up --build --detach --wait
+
+ps:
+	$(COMPOSE) ps
+
+down:
+	$(COMPOSE) down
+
+db-upgrade-local:
+	cd backend && $(POETRY) run alembic upgrade head
+
+db-current-local:
+	cd backend && $(POETRY) run alembic current
+
+e2e-install:
+	cd frontend && $(NPM) exec playwright install chromium
