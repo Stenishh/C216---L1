@@ -34,8 +34,18 @@ class OrderService:
             raise OrderNotFound
         return order
 
-    def list(self, offset: int = 0, limit: int = 20):
-        return self.repository.list(offset, limit)
+    def list(
+        self,
+        offset: int = 0,
+        limit: int = 20,
+        order_id=None,
+        customer=None,
+        status=None,
+    ):
+        return self.repository.list(offset, limit, order_id, customer, status)
+
+    def summary(self):
+        return self.repository.summary()
 
     def _check_customer(self, customer_id: int):
         if not self.repository.customer_exists(customer_id):

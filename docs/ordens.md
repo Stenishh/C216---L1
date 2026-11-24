@@ -58,7 +58,13 @@ a verificação do status contra alterações simultâneas.
 
 A listagem aceita `offset` (mínimo 0) e `limit` (1 a 100, padrão 20).
 A ordenação é por criação decrescente e ID decrescente como desempate.
-Filtros e indicadores ficam para a tarefa 11. Não há endpoint de escrita livre
+`GET /orders/` aceita filtros combináveis `order_id` (inteiro positivo),
+`customer` (parte do nome, até 100 caracteres, sem diferenciar maiúsculas;
+`%` e `_` são literais) e `status` (valor do enum). Filtros são aplicados antes
+da paginação. `GET /orders/summary` retorna totais globais: `open` exclui
+entregues e canceladas; `awaiting_approval` conta somente decisões pendentes;
+`ready_for_delivery` conta concluídas. A interface consulta os totais ao abrir
+a listagem e oferece atualização explícita. Não há endpoint de escrita livre
 de histórico ou status.
 
 ## Diagnóstico, orçamento e decisão

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, Response
 from sqlalchemy.orm import Session
 
 from src.database.session import get_db
+from src.models.enums import OrderStatus
 from src.repositories.orders import OrderRepository
 from src.schemas.orders import (
     BudgetRejection,
@@ -57,8 +58,18 @@ def list_orders(
     service: Service,
     offset: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    order_id: Annotated[int | None, Query(gt=0)] = None,
+    customer: Annotated[str | None, Query(max_length=100)] = None,
+    status: OrderStatus | None = None,
 ):
-    return service.list(offset, limit)
+    return service.list(
+        offset, limit, order_id, customer.strip() if customer else None, status
+    )
+
+
+@router.get("/summary", response_model=dict[str, int])
+def order_summary(service: Service):
+    return service.summary()
 
 
 @router.get("/{order_id}", response_model=OrderRead)

@@ -9,13 +9,22 @@ import {
   ResourceState,
 } from "../components/Feedback";
 import { StatusBadge } from "../components/StatusBadge";
+import { statuses } from "../domain/orders";
 import { useResource } from "../hooks/useResource";
 
 const pageSize = 20;
 
 export function OrderList() {
   const [offset, setOffset] = useState(0);
-  const resource = useResource(`/orders/?offset=${offset}&limit=${pageSize}`);
+  const [filters, setFilters] = useState({
+    order_id: "",
+    customer: "",
+    status: "",
+  });
+  const [applied, setApplied] = useState({});
+  const params = new URLSearchParams({ offset, limit: pageSize, ...applied });
+  const resource = useResource(`/orders/?${params}`);
+  const summary = useResource("/orders/summary");
   const location = useLocation();
   return (
     <section>
@@ -35,6 +44,98 @@ export function OrderList() {
           {location.state.message}
         </p>
       )}
+      <div className="panel mb-6">
+        <h2>Painel operacional</h2>
+        <ResourceState resource={summary}>
+          <dl className="form-grid">
+            <div>
+              <dt>Ordens abertas</dt>
+              <dd>{summary.data?.open}</dd>
+            </div>
+            <div>
+              <dt>Aguardando decisão</dt>
+              <dd>{summary.data?.awaiting_approval}</dd>
+            </div>
+            <div>
+              <dt>Prontas para entrega</dt>
+              <dd>{summary.data?.ready_for_delivery}</dd>
+            </div>
+          </dl>
+        </ResourceState>
+        <button
+          type="button"
+          className="mt-4"
+          onClick={() => {
+            resource.reload();
+            summary.reload();
+          }}
+        >
+          Atualizar dados
+        </button>
+      </div>
+      <form
+        className="panel mb-6"
+        onSubmit={(event) => {
+          event.preventDefault();
+          setOffset(0);
+          setApplied(
+            Object.fromEntries(
+              Object.entries(filters)
+                .map(([key, value]) => [key, value.trim()])
+                .filter(([, value]) => value),
+            ),
+          );
+        }}
+      >
+        <div className="form-grid">
+          <Field
+            label="Número da ordem"
+            type="number"
+            min="1"
+            step="1"
+            value={filters.order_id}
+            onChange={(event) =>
+              setFilters({ ...filters, order_id: event.target.value })
+            }
+          />
+          <Field
+            label="Nome do cliente"
+            maxLength={100}
+            value={filters.customer}
+            onChange={(event) =>
+              setFilters({ ...filters, customer: event.target.value })
+            }
+          />
+          <Field label="Status">
+            <select
+              value={filters.status}
+              onChange={(event) =>
+                setFilters({ ...filters, status: event.target.value })
+              }
+            >
+              <option value="">Todos</option>
+              {Object.entries(statuses).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <div className="actions">
+          <button type="submit">Filtrar ordens</button>
+          <button
+            type="button"
+            onClick={() => {
+              setFilters({ order_id: "", customer: "", status: "" });
+              setApplied({});
+              setOffset(0);
+            }}
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </form>
       <div className="panel">
         <ResourceState resource={resource}>
           {resource.data?.length === 0 ? (

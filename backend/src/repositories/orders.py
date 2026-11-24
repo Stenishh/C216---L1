@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from src.models import Customer, OrderEvent, ServiceOrder
-from src.models.enums import EventAction, OrderStatus
+from src.models.enums import BudgetDecision, EventAction, OrderStatus
 from src.schemas.orders import OrderCreate
 
 
@@ -21,15 +21,47 @@ class OrderRepository:
     def customer_exists(self, customer_id: int) -> bool:
         return self.session.get(Customer, customer_id) is not None
 
-    def list(self, offset: int, limit: int) -> list[ServiceOrder]:
+    def list(
+        self, offset: int, limit: int, order_id=None, customer=None, status=None
+    ) -> list[ServiceOrder]:
+        statement = select(ServiceOrder)
+        if order_id is not None:
+            statement = statement.where(ServiceOrder.id == order_id)
+        if customer:
+            statement = statement.join(Customer).where(
+                Customer.name.icontains(customer, autoescape=True)
+            )
+        if status is not None:
+            statement = statement.where(ServiceOrder.status == status)
         return list(
             self.session.scalars(
-                select(ServiceOrder)
-                .order_by(ServiceOrder.created_at.desc(), ServiceOrder.id.desc())
+                statement.order_by(
+                    ServiceOrder.created_at.desc(), ServiceOrder.id.desc()
+                )
                 .offset(offset)
                 .limit(limit)
             )
         )
+
+    def summary(self):
+        status = ServiceOrder.status
+        row = self.session.execute(
+            select(
+                func.count()
+                .filter(status.not_in([OrderStatus.DELIVERED, OrderStatus.CANCELLED]))
+                .label("open"),
+                func.count()
+                .filter(
+                    (status == OrderStatus.AWAITING_APPROVAL)
+                    & (ServiceOrder.budget_decision == BudgetDecision.PENDING)
+                )
+                .label("awaiting_approval"),
+                func.count()
+                .filter(status == OrderStatus.COMPLETED)
+                .label("ready_for_delivery"),
+            )
+        ).one()
+        return dict(row._mapping)
 
     def create(self, data: OrderCreate) -> ServiceOrder:
         order = ServiceOrder(**data.model_dump())
