@@ -67,7 +67,7 @@ button:hover,
 }
 button:disabled {
   opacity: 0.55;
-  cursor: wait;
+  cursor: not-allowed;
 }
 button.secondary,
 .button.secondary {
@@ -264,7 +264,192 @@ dd {
 .history li {
   padding-bottom: 1.5rem;
 }
+.order-progress {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  background: #e8eff3;
+  border-radius: 10px;
+  list-style: none;
+}
+.order-progress li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #566b78;
+  font-size: 0.85rem;
+}
+.order-progress li > span {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #bdcdd6;
+  border-radius: 50%;
+  background: white;
+  font-weight: 650;
+}
+.order-progress li[data-state="current"] {
+  color: #174b63;
+  font-weight: 700;
+}
+.order-progress li[data-state="current"] > span {
+  background: #174b63;
+  color: white;
+  border-color: #174b63;
+}
+.order-progress li[data-state="done"] > span {
+  background: #d8ece3;
+  border-color: #a7cdbb;
+  color: #20533e;
+}
+.order-data h2 {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e1e8ed;
+}
+.order-workflow {
+  --stage-color: #245b91;
+  --stage-tint: #edf4fb;
+  border-top: 4px solid var(--stage-color);
+}
+.order-workflow[data-stage="in_diagnosis"],
+.order-workflow[data-stage="awaiting_approval"] {
+  --stage-color: #885508;
+  --stage-tint: #fff7e6;
+}
+.order-workflow[data-stage="completed"],
+.order-workflow[data-stage="delivered"] {
+  --stage-color: #246549;
+  --stage-tint: #edf7f1;
+}
+.order-workflow[data-stage="cancelled"] {
+  --stage-color: #a32e3d;
+  --stage-tint: #fcebed;
+}
+.workflow-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.workflow-symbol {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  background: var(--stage-tint);
+  color: var(--stage-color);
+  border-radius: 12px;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+.workflow-caption {
+  color: var(--stage-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.workflow-heading h2 {
+  margin-bottom: 0.35rem;
+}
+.order-workflow .form-grid {
+  padding: 1.25rem;
+  background: #f6f9fb;
+  border-radius: 8px;
+}
+.budget-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid #ead6ac;
+  border-radius: 8px;
+  background: var(--stage-tint);
+  color: #704609;
+}
+.budget-summary strong {
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  letter-spacing: -0.04em;
+}
+.budget-decision {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #dbc28e;
+  border-radius: 20px;
+  font-weight: 650;
+}
+.budget-decision[data-decision="approved"] {
+  background: #e3f2eb;
+  color: #20533e;
+  border-color: #a7cdbb;
+}
+.order-workflow .order-danger-actions {
+  border-top: 1px solid #e1e8ed;
+  padding-top: 1.25rem;
+  margin-top: 2rem;
+}
+.order-danger-actions p {
+  width: 100%;
+  font-size: 0.85rem;
+  color: #566b78;
+}
+.order-danger-actions button.secondary {
+  color: #923344;
+  border-color: #e2bec5;
+}
+.workflow-confirmation {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid #b2cbdc;
+  border-left: 4px solid #245b91;
+  border-radius: 8px;
+  background: #f0f6fc;
+}
+.workflow-confirmation[data-destructive="true"] {
+  background: #fff4f5;
+  border-color: #e2bec5;
+  border-left-color: #a32e3d;
+}
+.badge[data-status="in_diagnosis"] {
+  background: #eeeafa;
+  color: #604491;
+}
+.badge[data-status="awaiting_approval"] {
+  background: #fff1ce;
+  color: #795008;
+}
+.badge[data-status="in_repair"] {
+  background: #e2efff;
+  color: #245b91;
+}
+.badge[data-status="completed"] {
+  background: #d8f0ec;
+  color: #1d6458;
+}
+@media (max-width: 800px) {
+  .order-progress {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem 0.5rem;
+  }
+}
 @media (max-width: 600px) {
+  .order-progress {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .order-workflow .actions > button {
+    width: 100%;
+  }
+  .workflow-heading {
+    gap: 0.75rem;
+  }
+  .workflow-confirmation {
+    padding: 1rem;
+  }
   .header-inner {
     padding: 1.25rem 1rem;
   }

@@ -100,7 +100,8 @@ function OrderRecord({ initialOrder, reload }) {
           Atualizar dados da ordem
         </button>
       )}
-      <div className="panel">
+      <OrderProgress status={order.status} />
+      <div className="panel order-data">
         <h2>Dados do atendimento</h2>
         <dl>
           <div>
@@ -193,6 +194,64 @@ function CustomerContact({ id }) {
   );
 }
 
+const workflowStages = [
+  ["received", "Recebimento"],
+  ["in_diagnosis", "Diagnóstico"],
+  ["awaiting_approval", "Orçamento"],
+  ["in_repair", "Reparo"],
+  ["completed", "Retirada"],
+  ["delivered", "Entrega"],
+];
+
+function OrderProgress({ status }) {
+  const current = workflowStages.findIndex(([value]) => value === status);
+  if (current < 0) return null;
+  return (
+    <ol className="order-progress" aria-label="Etapas do atendimento">
+      {workflowStages.map(([value, label], index) => (
+        <li
+          key={value}
+          data-state={
+            index < current ? "done" : index === current ? "current" : "next"
+          }
+          aria-current={index === current ? "step" : undefined}
+        >
+          <span aria-hidden="true">{index < current ? "✓" : index + 1}</span>
+          {label}
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+const workflowCopy = {
+  received: [
+    "Conferência de entrada",
+    "Confira o equipamento antes de iniciar a avaliação técnica.",
+  ],
+  in_diagnosis: [
+    "Diagnóstico e orçamento",
+    "Registre a avaliação e prepare o valor para aprovação do cliente.",
+  ],
+  awaiting_approval: [
+    "Aprovação do orçamento",
+    "Registre a decisão do cliente para dar continuidade ao atendimento.",
+  ],
+  in_repair: [
+    "Execução do reparo",
+    "Descreva o serviço realizado antes de concluir esta etapa.",
+  ],
+  completed: [
+    "Equipamento pronto para retirada",
+    "O reparo terminou. Registre a entrega quando o cliente retirar o equipamento.",
+  ],
+  delivered: ["Atendimento finalizado", "Equipamento entregue ao cliente."],
+  cancelled: [
+    "Atendimento cancelado",
+    "Consulte abaixo os dados e o histórico desta ordem.",
+  ],
+};
+
 function OrderWorkflow({ order, busy, perform }) {
   const [confirmation, setConfirmation] = useState("");
   const [reason, setReason] = useState("");
@@ -246,8 +305,24 @@ function OrderWorkflow({ order, busy, perform }) {
   }
   const final = order.status === "delivered" || order.status === "cancelled";
   return (
-    <div className="panel">
-      <h2>Próximo passo</h2>
+    <div className="panel order-workflow" data-stage={order.status}>
+      <header className="workflow-heading">
+        <span className="workflow-symbol" aria-hidden="true">
+          {order.status === "awaiting_approval" ||
+          order.status === "in_diagnosis"
+            ? "R$"
+            : final || order.status === "completed"
+              ? "✓"
+              : "↗"}
+        </span>
+        <div>
+          <p className="workflow-caption">
+            {final ? "Resumo do atendimento" : "Próximo passo"}
+          </p>
+          <h2>{workflowCopy[order.status][0]}</h2>
+          <p className="muted">{workflowCopy[order.status][1]}</p>
+        </div>
+      </header>
       {final ? (
         <p>
           Atendimento encerrado. Os dados e o histórico permanecem disponíveis
@@ -340,10 +415,18 @@ function OrderWorkflow({ order, busy, perform }) {
           )}
           {order.status === "awaiting_approval" && (
             <>
-              <p>
-                Orçamento de {currency(order.budget_amount)}. Decisão:{" "}
-                {decisions[order.budget_decision].toLowerCase()}.
-              </p>
+              <div className="budget-summary">
+                <div>
+                  <p>Valor do orçamento</p>
+                  <strong>{currency(order.budget_amount)}</strong>
+                </div>
+                <span
+                  className="budget-decision"
+                  data-decision={order.budget_decision}
+                >
+                  {decisions[order.budget_decision]}
+                </span>
+              </div>
               <div className="actions">
                 {order.budget_decision === "pending" ? (
                   <>
@@ -431,7 +514,8 @@ function OrderWorkflow({ order, busy, perform }) {
           {["received", "in_diagnosis", "awaiting_approval"].includes(
             order.status,
           ) && (
-            <div className="actions">
+            <div className="actions order-danger-actions">
+              <p>Outras ações</p>
               <button
                 type="button"
                 className="secondary"
@@ -452,7 +536,10 @@ function OrderWorkflow({ order, busy, perform }) {
           )}
           {confirmation && (
             <form
-              className="mt-6 border-t border-slate-200 pt-6"
+              className="workflow-confirmation"
+              data-destructive={["cancel", "reject-budget", "delete"].includes(
+                confirmation,
+              )}
               onSubmit={confirm}
               aria-label="Confirmação da ação"
             >
