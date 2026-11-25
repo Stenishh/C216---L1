@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { request } from "../api/http";
+import { customers } from "../api/customers";
 import {
   dateTime,
   ErrorNotice,
@@ -14,9 +14,7 @@ const pageSize = 20;
 
 export function CustomerList() {
   const [offset, setOffset] = useState(0);
-  const resource = useResource(
-    `/customers/?offset=${offset}&limit=${pageSize}`,
-  );
+  const resource = useResource(customers.list, { offset, limit: pageSize });
   const location = useLocation();
   return (
     <section>
@@ -82,7 +80,7 @@ export function CustomerList() {
 
 export function CustomerDetail() {
   const { id } = useParams();
-  const resource = useResource(`/customers/${id}`);
+  const resource = useResource(customers.get, { id });
   return (
     <ResourceState resource={resource}>
       {resource.data && <CustomerRecord key={id} customer={resource.data} />}
@@ -103,7 +101,7 @@ function CustomerRecord({ customer }) {
     setBusy(true);
     setError("");
     try {
-      await request(`/customers/${customer.id}`, { method: "DELETE" });
+      await customers.remove(customer.id);
       navigate("/customers", {
         replace: true,
         state: { message: "Cliente excluído." },
@@ -200,7 +198,7 @@ function CustomerRecord({ customer }) {
 
 export function CustomerEdit() {
   const { id } = useParams();
-  const resource = useResource(`/customers/${id}`);
+  const resource = useResource(customers.get, { id });
   return (
     <ResourceState resource={resource}>
       {resource.data && <CustomerForm key={id} customer={resource.data} />}
@@ -231,17 +229,14 @@ export function CustomerForm({ customer }) {
     setBusy(true);
     setError("");
     try {
-      const saved = await request(
-        customer ? `/customers/${customer.id}` : "/customers/",
-        {
-          method: customer ? "PUT" : "POST",
-          body: {
-            name: values.name.trim(),
-            phone: values.phone.trim(),
-            email: values.email.trim() || null,
-          },
-        },
-      );
+      const body = {
+        name: values.name.trim(),
+        phone: values.phone.trim(),
+        email: values.email.trim() || null,
+      };
+      const saved = customer
+        ? await customers.replace(customer.id, body)
+        : await customers.create(body);
       navigate(`/customers/${saved.id}`, {
         replace: true,
         state: {

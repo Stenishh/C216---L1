@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { request } from "../api/http";
 
-export function useResource(path) {
+export function useResource(load, params = {}) {
+  const path = JSON.stringify(params);
   const [revision, setRevision] = useState(0);
   const [state, setState] = useState({
     path: null,
@@ -13,15 +13,16 @@ export function useResource(path) {
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
-    setState({ path, revision, data: null, loading: true, error: "" });
-    request(path, { signal: controller.signal }).then(
+    setState({ load, path, revision, data: null, loading: true, error: "" });
+    load(JSON.parse(path), { signal: controller.signal }).then(
       (data) => {
         if (active)
-          setState({ path, revision, data, loading: false, error: "" });
+          setState({ load, path, revision, data, loading: false, error: "" });
       },
       (error) => {
         if (active && error.name !== "AbortError")
           setState({
+            load,
             path,
             revision,
             data: null,
@@ -34,9 +35,11 @@ export function useResource(path) {
       active = false;
       controller.abort();
     };
-  }, [path, revision]);
+  }, [load, path, revision]);
   return {
-    ...(state.path === path && state.revision === revision
+    ...(state.load === load &&
+    state.path === path &&
+    state.revision === revision
       ? state
       : { data: null, loading: true, error: "" }),
     reload,

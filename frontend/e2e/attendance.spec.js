@@ -69,6 +69,7 @@ test("cliente, ordem, atendimento completo, filtros e persistência após reload
   await expect(page.getByRole("heading", { name })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("heading", { name })).toBeVisible();
+  const customerPath = new URL(page.url()).pathname;
   await page.goto("/orders/new");
   await page.getByLabel("Buscar cliente por nome").fill(name);
   const option = page
@@ -146,4 +147,44 @@ test("cliente, ordem, atendimento completo, filtros e persistência após reload
     .selectOption("received");
   await page.getByRole("button", { name: "Filtrar ordens" }).click();
   await expect(page.getByText(/Nenhuma ordem nesta página/)).toBeVisible();
+
+  // A second real order keeps deletion blocked until it is closed too.
+  const created = await page.request.post("/api/orders/", {
+    data: {
+      customer_id: Number(customerPath.split("/").at(-1)),
+      equipment_type: "notebook",
+      brand: "Dell",
+      model: "Ordem adicional",
+      reported_problem: "Cliente desistiu da avaliação",
+    },
+  });
+  expect(created.status()).toBe(201);
+  const additionalOrder = await created.json();
+  await page.goto(customerPath);
+  await page
+    .getByRole("button", { name: "Excluir cliente", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Confirmar exclusão", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toHaveText(/ordens em andamento/);
+  const cancelled = await page.request.post(
+    `/api/orders/${additionalOrder.id}/cancel`,
+    {
+      data: { reason: "Cliente desistiu da avaliação" },
+    },
+  );
+  expect(cancelled.status()).toBe(200);
+  await page
+    .getByRole("button", { name: "Confirmar exclusão", exact: true })
+    .click();
+  await expect(page.getByText("Cliente excluído.")).toBeVisible();
+  expect((await page.request.get(`/api${customerPath}`)).status()).toBe(404);
+  expect((await page.request.get(`/api${orderPath}`)).status()).toBe(404);
+  expect((await page.request.get(`/api${orderPath}/history`)).status()).toBe(
+    404,
+  );
+  expect(
+    (await page.request.get(`/api/orders/${additionalOrder.id}`)).status(),
+  ).toBe(404);
 });

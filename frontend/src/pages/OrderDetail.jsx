@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { request } from "../api/http";
+import { customers } from "../api/customers";
+import { orderActions, orders } from "../api/orders";
 import {
   dateTime,
   ErrorNotice,
@@ -14,7 +15,7 @@ import { useResource } from "../hooks/useResource";
 
 export function OrderDetail() {
   const { id } = useParams();
-  const resource = useResource(`/orders/${id}`);
+  const resource = useResource(orders.get, { id });
   return (
     <ResourceState resource={resource}>
       {resource.data && (
@@ -44,10 +45,10 @@ function OrderRecord({ initialOrder, reload }) {
     setError("");
     setMessage("");
     try {
-      const updated = await request(
-        `/orders/${order.id}${action ? `/${action}` : ""}`,
-        { method, ...(body !== undefined ? { body } : {}) },
-      );
+      const updated =
+        method === "DELETE"
+          ? await orders.remove(order.id)
+          : await orderActions[action](order.id, body);
       if (method === "DELETE") {
         navigate("/orders", {
           replace: true,
@@ -176,7 +177,7 @@ function OrderRecord({ initialOrder, reload }) {
 }
 
 function CustomerContact({ id }) {
-  const resource = useResource(`/customers/${id}`);
+  const resource = useResource(customers.get, { id });
   return (
     <>
       <Link to={`/customers/${id}`}>
@@ -589,9 +590,7 @@ function OrderWorkflow({ order, busy, perform }) {
 
 function OrderHistory({ id }) {
   const [offset, setOffset] = useState(0);
-  const resource = useResource(
-    `/orders/${id}/history?offset=${offset}&limit=20`,
-  );
+  const resource = useResource(orders.history, { id, offset, limit: 20 });
   return (
     <section className="panel" aria-label="Histórico de atendimento">
       <h2>Histórico de atendimento</h2>

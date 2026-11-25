@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { request } from "../api/http";
+import { customers } from "../api/customers";
+import { orders } from "../api/orders";
 import {
   dateTime,
   ErrorNotice,
@@ -22,9 +23,9 @@ export function OrderList() {
     status: "",
   });
   const [applied, setApplied] = useState({});
-  const params = new URLSearchParams({ offset, limit: pageSize, ...applied });
-  const resource = useResource(`/orders/?${params}`);
-  const summary = useResource("/orders/summary");
+  const params = { offset, limit: pageSize, ...applied };
+  const resource = useResource(orders.list, params);
+  const summary = useResource(orders.summary);
   const location = useLocation();
   return (
     <section>
@@ -201,7 +202,7 @@ export function OrderList() {
 
 export function OrderEdit() {
   const { id } = useParams();
-  const resource = useResource(`/orders/${id}`);
+  const resource = useResource(orders.get, { id });
   return (
     <ResourceState resource={resource}>
       {resource.data &&
@@ -224,9 +225,11 @@ export function OrderEdit() {
 function CustomerPicker({ value, onChange, disabled }) {
   const [search, setSearch] = useState("");
   const [offset, setOffset] = useState(0);
-  const resource = useResource(
-    `/customers/?q=${encodeURIComponent(search)}&offset=${offset}&limit=${pageSize}`,
-  );
+  const resource = useResource(customers.list, {
+    q: search,
+    offset,
+    limit: pageSize,
+  });
   const [selectedName, setSelectedName] = useState("");
   return (
     <div className="wide">
@@ -321,17 +324,17 @@ export function OrderForm({ order }) {
     setBusy(true);
     setError("");
     try {
-      const saved = await request(order ? `/orders/${order.id}` : "/orders/", {
-        method: order ? "PUT" : "POST",
-        body: {
-          ...values,
-          customer_id: Number(values.customer_id),
-          brand: values.brand.trim(),
-          model: values.model.trim(),
-          serial_number: values.serial_number.trim() || null,
-          reported_problem: values.reported_problem.trim(),
-        },
-      });
+      const body = {
+        ...values,
+        customer_id: Number(values.customer_id),
+        brand: values.brand.trim(),
+        model: values.model.trim(),
+        serial_number: values.serial_number.trim() || null,
+        reported_problem: values.reported_problem.trim(),
+      };
+      const saved = order
+        ? await orders.replace(order.id, body)
+        : await orders.create(body);
       navigate(`/orders/${saved.id}`, {
         replace: true,
         state: { message: order ? "Ordem atualizada." : "Ordem aberta." },
