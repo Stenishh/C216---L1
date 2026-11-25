@@ -73,9 +73,11 @@ rejeição/cancelamento com motivo, confirmação de exclusão, estados finais,
 paginação do histórico, preservação em falha e bloqueio de envio duplicado.
 Testes de leitura também verificam cancelamento e respostas fora de ordem.
 
-`src/api/http.js` centraliza fetch, JSON, respostas 204, falhas de rede,
-mensagens de conflito/validação e cancelamento. Os componentes não fazem
-tratamento HTTP duplicado. `App.jsx` reúne navegação e rotas, com página
+`src/api/customers.js` e `src/api/orders.js` agrupam os endpoints por entidade,
+incluindo CRUD, filtros, indicadores e ações do atendimento. As telas usam
+esses serviços; `useResource` gerencia carregamento, novas tentativas e
+cancelamento das leituras. `src/api/http.js` centraliza fetch, JSON, respostas
+204 e mensagens de rede, conflito e validação. `App.jsx` reúne navegação e rotas, com página
 desconhecida e link para pular ao conteúdo. Não há autenticação nesta versão.
 
 Vitest usa jsdom e Testing Library; as respostas HTTP são simuladas, sem

@@ -1,7 +1,8 @@
 # Escopo e regras de negócio do Repara
 
 Estado: escopo da primeira versão aprovado pelo aluno em 15/11/2026.
-Este documento define o comportamento planejado; não descreve recursos já implementados.
+Este documento registra o escopo aprovado e as regras atuais da primeira versão.
+As instruções de execução e validação estão no README e nos guias técnicos.
 
 ## Problema e público
 
@@ -125,8 +126,10 @@ visível. O painel de aguardando decisão contará somente decisões pendentes.
 
 ## Regras de edição e exclusão
 
-- Cliente: pode editar nome e contato a qualquer momento. Pode excluir somente
-  se não houver nenhuma ordem vinculada, mesmo cancelada ou entregue.
+- Cliente: pode editar nome e contato a qualquer momento. Pode excluir se não
+  houver ordens ou se todas estiverem entregues ou canceladas. A confirmação
+  informa que essas ordens e seus históricos também serão removidos na mesma
+  transação. Qualquer ordem em andamento bloqueia a exclusão e preserva tudo.
 - Ordem Recebida: pode corrigir cliente, equipamento e defeito relatado. Pode
   excluir com confirmação se ainda houver apenas o evento inicial de abertura;
   nesse caso, a exclusão remove também esse evento na mesma transação.
@@ -136,7 +139,8 @@ visível. O painel de aguardando decisão contará somente decisões pendentes.
   ações de decisão, início do reparo ou cancelamento conforme a tabela.
 - Ordem Em reparo: pode editar a descrição do serviço realizado até concluir.
 - Ordem Concluída: pode apenas registrar a entrega.
-- Ordens Entregue ou Cancelada: ficam disponíveis somente para consulta.
+- Ordens Entregue ou Cancelada: ficam disponíveis somente para consulta;
+  podem ser removidas junto com a exclusão confirmada do cliente.
 - Uma ordem com andamento não pode ser excluída. Cancelamento preserva os dados
   e o histórico; não equivale a exclusão.
 
@@ -190,7 +194,8 @@ assinatura digital, deploy em nuvem e microsserviços adicionais.
 6. Recarregar a página e confirmar dados, status, valor e histórico persistidos.
 7. Entregar e confirmar o estado final; verificar filtros e painel.
 8. Em outra ordem, rejeitar orçamento e confirmar cancelamento com motivo.
-9. Confirmar bloqueio de exclusão de cliente vinculado e de ordem com andamento.
+9. Confirmar bloqueio de exclusão de cliente com ordem em andamento e de ordem
+   com andamento. Confirmar exclusão de cliente com apenas ordens encerradas.
 
 Cada funcionalidade terá testes durante sua implementação. A validação final
 reunirá testes, lint, formatação, build e E2E em um comando make. O README será

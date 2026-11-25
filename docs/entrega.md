@@ -39,7 +39,9 @@ Execute `make check-all` antes de gravar; a suíte completa leva alguns minutos.
 - Inserir o link real na seção **Vídeo e entrega** do README, substituindo a pendência.
 - Enviar a atualização do README para `projeto-final` e aguardar os Checks do PR.
 - Manter o PR de `projeto-final` para `main` aberto, sem merge.
-- Enviar no Teams os links do repositório, do PR e do vídeo até 28/11/2026.
+- Enviar no Teams os links do PR e do vídeo até 28/11/2026. O PR também dá
+  acesso ao repositório e à branch `projeto-final`; o link do repositório pode
+  ser incluído adicionalmente, conforme o PDF.
 - Garantir acesso do monitor e do professor ao repositório e ao vídeo até o fim da avaliação.
 
 O vídeo e o envio no Teams precisam ser concluídos pelo aluno. Não há exigência

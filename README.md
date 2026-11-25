@@ -36,6 +36,20 @@ make db-current
 make ps
 ```
 
+No PowerShell, se `make` não for reconhecido, execute os comandos equivalentes
+diretamente com Docker Compose (sem precisar de Make, Python ou Poetry no host):
+
+```powershell
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+# Revise o .env antes de continuar.
+docker compose up --build --detach --wait
+docker compose exec -T api alembic upgrade head
+docker compose exec -T api alembic current
+docker compose ps
+```
+
+Para encerrar os serviços pelo PowerShell, use `docker compose down`.
+
 Revise o `.env` antes de iniciar os contêineres. Acesse a interface em
 http://127.0.0.1:8080 e a API em http://127.0.0.1:8000/docs.
 `db-current` deve mostrar `0001 (head)`. As migrations são um passo explícito:
@@ -106,8 +120,9 @@ Veja o [modelo, as variáveis e os comandos de banco](docs/banco.md).
 
 O Swagger em `/docs` permite cadastrar, listar, consultar, editar e excluir
 clientes. A listagem aceita busca por nome e paginação. Telefone com máscara é
-normalizado e e-mail é opcional e validado. Clientes com qualquer ordem vinculada
-não podem ser excluídos, retornando 409.
+normalizado e e-mail é opcional e validado. Ordens em andamento impedem a
+exclusão do cliente (409). Se todas estiverem entregues ou canceladas, a
+confirmação de exclusão remove o cliente, suas ordens e os históricos juntos.
 
 Veja o [contrato e as regras da API de clientes](docs/clientes.md).
 
@@ -177,7 +192,14 @@ O vídeo demonstrativo ainda será gravado e seu link será publicado nesta seç
 antes da entrega. O [roteiro de demonstração](docs/entrega.md) cobre Docker,
 arquitetura, CRUD, atendimento, persistência e testes.
 
-A entrega usa a branch `projeto-final` e um PR aberto para `main`, com os Checks
-aprovados e sem merge. No Teams, enviar os links do repositório, do PR e do vídeo
-até 28/11/2026, sem ZIP. Os links devem permanecer acessíveis ao monitor e ao
-professor durante a avaliação.
+A entrega usa obrigatoriamente a branch `projeto-final` e um PR de
+`projeto-final` para `main`, aberto e sem merge durante a avaliação. Os Checks
+aplicáveis precisam passar no commit final publicado, incluindo as mudanças
+de frontend e backend.
+
+Até 28/11/2026, enviar no Teams os links do PR e do vídeo, conforme o
+esclarecimento da aula. O link do repositório pode ser incluído adicionalmente
+para contemplar também a lista do PDF. Não enviar ZIP. O vídeo deve mostrar
+a aplicação real e ter narração do próprio aluno; o link também deve estar
+neste README. Todos os links precisam permanecer acessíveis ao monitor e ao
+professor até o fim da avaliação.

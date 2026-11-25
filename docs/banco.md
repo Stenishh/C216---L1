@@ -14,14 +14,14 @@ erDiagram
 | `service_orders` | Cliente obrigatório, equipamento, defeito, diagnóstico, orçamento, decisão, serviço, cancelamento, status e datas |
 | `order_events` | Ação, status anterior/resultante, observação, valor aprovado opcional e data; vinculado à ordem |
 
-Os nomes internos são em inglês; as telas usarão os termos em português do
+Os nomes internos são em inglês; as telas usam os termos em português do
 [escopo aprovado](escopo.md). A migration inicial é `0001` e cria somente o
 domínio do Repara. Não contém tabelas de tarefas ou itens das práticas.
 
 IDs são `BIGINT` com `IDENTITY`. Valores monetários usam `NUMERIC(8,2)` e
 `Decimal`, com limite de zero a 999.999,99. Datas usam fuso horário
 (`TIMESTAMP WITH TIME ZONE`) e são geradas pelo banco. A conexão usa o fuso UTC
-para leitura e escrita; a interface fará a apresentação no horário local.
+para leitura e escrita; a interface apresenta as datas no horário local.
 `updated_at` é atualizado nas alterações feitas pelo ORM; não há trigger para
 alterações manuais de SQL.
 
@@ -29,20 +29,22 @@ Status, tipos de equipamento, decisões e ações do histórico têm valores
 enumerados e restrições `CHECK`. Existem índices nas chaves estrangeiras e
 um índice composto de status/data para consultas de acompanhamento.
 
-A chave estrangeira impede excluir cliente que tenha ordens. Excluir uma ordem
-remove seus eventos por `ON DELETE CASCADE`, sem excluir o cliente. A regra de
-permitir exclusão somente de ordem sem andamento será aplicada no serviço na
-tarefa 05; nesta etapa o banco fornece a integridade referencial.
+A chave estrangeira impede deixar ordens sem cliente. O serviço bloqueia a
+exclusão de clientes com ordens em andamento. Quando todas estão entregues ou
+canceladas, remove essas ordens e o cliente na mesma transação. Excluir uma
+ordem remove seus eventos por `ON DELETE CASCADE`, sem excluir o cliente.
+A exclusão individual de uma ordem exige status Recebida e apenas o evento
+inicial de abertura; essa regra é validada pelo serviço.
 
-O histórico não terá endpoints de edição/exclusão. As transições e o registro
-atômico dos eventos pertencem às tarefas 05–07. Ter as tabelas criadas não
-significa que o atendimento já está disponível pela API.
+O histórico possui apenas consulta pela API. As transições do atendimento
+e seus eventos são persistidos na mesma transação, com rollback em falhas.
 
 ## Configuração e execução local
 
-Requisitos adicionais: Docker com Compose v2 ativo. O `compose.yaml` desta etapa
-contém apenas PostgreSQL e usa o projeto `repara`. API e frontend serão
-adicionados à execução multicontêiner na tarefa 12.
+Requisitos adicionais: Docker com Compose v2 ativo. O `compose.yaml` executa
+PostgreSQL, API e frontend no projeto `repara`. Os comandos abaixo iniciam
+somente o banco para desenvolvimento com Python local. Para executar os três
+serviços, siga o [guia Docker](docker.md).
 
 Na raiz do repositório:
 

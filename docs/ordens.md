@@ -141,7 +141,9 @@ desde que o reparo ainda não tenha começado. Após o início do reparo retorna
 Conclusão, entrega e cancelamento geram evento com status anterior, resultante
 e data UTC. Cancelamento registra também o motivo na ordem e no evento.
 As alterações e o evento são salvos juntos, com rollback em caso de falha.
-Entregue e Cancelada são estados finais, sem reabertura ou exclusão. Concluída
+Entregue e Cancelada são estados finais, sem reabertura ou exclusão individual.
+Essas ordens podem ser removidas junto com a exclusão confirmada do cliente,
+desde que ele não tenha ordens em andamento. Concluída
 permite apenas a entrega. Ações repetidas retornam 409, sem novo evento.
 
 ## Consulta do histórico

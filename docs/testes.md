@@ -20,7 +20,9 @@ do projeto `repara-e2e-*` correspondente, sem usar comandos globais de limpeza.
 
 Os cenários cobrem CRUD de cliente e ordem sem andamento, orçamento zero,
 aprovação, reparo, conclusão, entrega, histórico, filtros e reload em URLs
-de detalhe para confirmar persistência. Falhas geram screenshot, trace e
+de detalhe para confirmar persistência. Também verificam o bloqueio de
+exclusão enquanto há uma ordem em andamento e a remoção do cliente com
+ordens entregues e canceladas, incluindo seus históricos. Falhas geram screenshot, trace e
 relatório em `frontend/test-results` e `frontend/playwright-report`, ignorados
 pelo Git. Para examinar: `make e2e-report`.
 
