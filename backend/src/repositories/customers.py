@@ -1,7 +1,8 @@
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from src.models import Customer, ServiceOrder
+from src.models.enums import OrderStatus
 from src.schemas.customers import CustomerCreate
 
 
@@ -33,11 +34,20 @@ class CustomerRepository:
     def has_orders(self, customer_id: int) -> bool:
         statement = (
             select(ServiceOrder.id)
-            .where(ServiceOrder.customer_id == customer_id)
+            .where(
+                ServiceOrder.customer_id == customer_id,
+                ServiceOrder.status != OrderStatus.CANCELLED,
+            )
             .limit(1)
         )
         return self.session.scalar(statement) is not None
 
     def delete(self, customer: Customer) -> None:
+        self.session.execute(
+            delete(ServiceOrder).where(
+                ServiceOrder.customer_id == customer.id,
+                ServiceOrder.status == OrderStatus.CANCELLED,
+            )
+        )
         self.session.delete(customer)
         self.session.flush()

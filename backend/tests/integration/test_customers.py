@@ -129,7 +129,7 @@ def link_order(engine, customer_id, status):
 
 
 @pytest.mark.parametrize(
-    "status", [OrderStatus.RECEIVED, OrderStatus.CANCELLED, OrderStatus.DELIVERED]
+    "status", [status for status in OrderStatus if status != OrderStatus.CANCELLED]
 )
 def test_linked_customer_cannot_be_deleted_in_any_order_status(
     client, database, status
@@ -140,7 +140,7 @@ def test_linked_customer_cannot_be_deleted_in_any_order_status(
     response = client.delete(f"/customers/{customer_id}")
     assert response.status_code == 409
     assert response.json() == {
-        "detail": "Não é possível excluir um cliente com ordens vinculadas."
+        "detail": "Não é possível excluir um cliente com ordens não canceladas vinculadas."
     }
     with Session(engine) as session:
         assert session.get(Customer, customer_id) is not None
@@ -166,3 +166,38 @@ def test_foreign_key_conflict_is_handled_and_connection_recovers(
     assert (
         client.post("/customers/", json={**VALID, "name": "Bruno"}).status_code == 201
     )
+
+
+def test_customer_with_only_cancelled_orders_can_be_deleted(client, database):
+    customer_id = client.post("/customers/", json=VALID).json()["id"]
+    engine, _ = database
+    order_ids = [
+        link_order(engine, customer_id, OrderStatus.CANCELLED) for _ in range(2)
+    ]
+    assert client.delete(f"/customers/{customer_id}").status_code == 204
+    assert client.get(f"/customers/{customer_id}").status_code == 404
+    with Session(engine) as session:
+        for order_id in order_ids:
+            assert session.get(ServiceOrder, order_id) is None
+            assert (
+                session.scalar(
+                    select(OrderEvent.id).where(OrderEvent.order_id == order_id)
+                )
+                is None
+            )
+
+
+def test_mixed_orders_prevent_deletion_and_preserve_cancelled_history(client, database):
+    customer_id = client.post("/customers/", json=VALID).json()["id"]
+    engine, _ = database
+    cancelled_id = link_order(engine, customer_id, OrderStatus.CANCELLED)
+    link_order(engine, customer_id, OrderStatus.RECEIVED)
+    assert client.delete(f"/customers/{customer_id}").status_code == 409
+    with Session(engine) as session:
+        assert session.get(ServiceOrder, cancelled_id) is not None
+        assert (
+            session.scalar(
+                select(OrderEvent.id).where(OrderEvent.order_id == cancelled_id)
+            )
+            is not None
+        )
