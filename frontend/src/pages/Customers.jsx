@@ -152,15 +152,15 @@ function CustomerRecord({ customer }) {
         <h2>Excluir cliente</h2>
         <p>
           A exclusão é permitida para clientes sem ordens ou com todas as ordens
-          canceladas.
+          entregues ou canceladas.
         </p>
         <ErrorNotice message={error} />
         {confirming ? (
           <fieldset aria-label="Confirmar exclusão">
             <p>
-              Excluir o cadastro de {customer.name}? As ordens canceladas e seus
-              históricos também serão excluídos. Esta ação não pode ser
-              desfeita.
+              Excluir o cadastro de {customer.name}? As ordens entregues ou
+              canceladas e seus históricos também serão excluídos. Esta ação não
+              pode ser desfeita.
             </p>
             <div className="actions">
               <button

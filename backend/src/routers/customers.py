@@ -75,6 +75,6 @@ def delete_customer(customer_id: CustomerId, service: Service):
     except CustomerHasOrders as exc:
         raise HTTPException(
             status_code=409,
-            detail="Não é possível excluir um cliente com ordens não canceladas vinculadas.",
+            detail="Não é possível excluir um cliente com ordens em andamento vinculadas.",
         ) from exc
     return Response(status_code=204)

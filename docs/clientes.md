@@ -15,11 +15,11 @@ exibidos sem remover o cadastro; falhas ao salvar preservam o formulário.
 | GET | `/customers/{id}` | Consulta cliente, 200 |
 | PUT | `/customers/{id}` | Substitui os dados cadastrais, 200 |
 | PATCH | `/customers/{id}` | Atualiza somente os campos informados, 200 |
-| DELETE | `/customers/{id}` | Exclui cliente sem ordens ou apenas com ordens canceladas (remove também essas ordens e históricos), 204 sem corpo |
+| DELETE | `/customers/{id}` | Exclui cliente sem ordens ou apenas com ordens entregues ou canceladas (remove também essas ordens e históricos), 204 sem corpo |
 
 Use a barra final nas rotas de coleção. O ID deve ser inteiro positivo.
 Cliente inexistente retorna 404; dados inválidos, 422; exclusão com ordens
-não canceladas vinculadas, 409. Mensagens de conflito não expõem SQL ou detalhes do banco.
+em andamento vinculadas, 409. Mensagens de conflito não expõem SQL ou detalhes do banco.
 
 ## Entrada e saída
 
@@ -65,8 +65,8 @@ A busca não promete equivalência entre caracteres com e sem acento.
 
 ## Exclusão protegida
 
-Ordens não canceladas impedem a exclusão do cliente, incluindo ordens
-entregues. Se todas estiverem canceladas, a exclusão remove o cliente, essas
+Ordens em andamento impedem a exclusão do cliente.
+Se todas estiverem entregues ou canceladas, a exclusão remove o cliente, essas
 ordens e seus históricos na mesma transação, mediante confirmação na interface.
 O serviço verifica os vínculos e a chave estrangeira
 do PostgreSQL também protege contra vínculos criados entre a consulta e a
@@ -74,7 +74,7 @@ exclusão. O conflito do banco é tratado com rollback e resposta 409:
 
 ```json
 {
-  "detail": "Não é possível excluir um cliente com ordens não canceladas vinculadas."
+  "detail": "Não é possível excluir um cliente com ordens em andamento vinculadas."
 }
 ```
 

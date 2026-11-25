@@ -106,7 +106,7 @@ describe("gestão de clientes", () => {
             status: 409,
             data: {
               detail:
-                "Não é possível excluir um cliente com ordens não canceladas vinculadas.",
+                "Não é possível excluir um cliente com ordens em andamento vinculadas.",
             },
           }
         : customer,
@@ -122,7 +122,7 @@ describe("gestão de clientes", () => {
       screen.getByRole("button", { name: "Confirmar exclusão" }),
     );
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "ordens não canceladas vinculadas",
+      "ordens em andamento vinculadas",
     );
     expect(
       screen.getByRole("heading", { name: customer.name }),

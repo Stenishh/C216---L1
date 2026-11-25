@@ -36,7 +36,9 @@ class CustomerRepository:
             select(ServiceOrder.id)
             .where(
                 ServiceOrder.customer_id == customer_id,
-                ServiceOrder.status != OrderStatus.CANCELLED,
+                ServiceOrder.status.not_in(
+                    (OrderStatus.CANCELLED, OrderStatus.DELIVERED)
+                ),
             )
             .limit(1)
         )
@@ -46,7 +48,7 @@ class CustomerRepository:
         self.session.execute(
             delete(ServiceOrder).where(
                 ServiceOrder.customer_id == customer.id,
-                ServiceOrder.status == OrderStatus.CANCELLED,
+                ServiceOrder.status.in_((OrderStatus.CANCELLED, OrderStatus.DELIVERED)),
             )
         )
         self.session.delete(customer)

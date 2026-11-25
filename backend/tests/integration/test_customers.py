@@ -129,18 +129,21 @@ def link_order(engine, customer_id, status):
 
 
 @pytest.mark.parametrize(
-    "status", [status for status in OrderStatus if status != OrderStatus.CANCELLED]
+    "status",
+    [
+        status
+        for status in OrderStatus
+        if status not in (OrderStatus.CANCELLED, OrderStatus.DELIVERED)
+    ],
 )
-def test_linked_customer_cannot_be_deleted_in_any_order_status(
-    client, database, status
-):
+def test_customer_with_active_order_cannot_be_deleted(client, database, status):
     customer_id = client.post("/customers/", json=VALID).json()["id"]
     engine, _ = database
     order_id = link_order(engine, customer_id, status)
     response = client.delete(f"/customers/{customer_id}")
     assert response.status_code == 409
     assert response.json() == {
-        "detail": "Não é possível excluir um cliente com ordens não canceladas vinculadas."
+        "detail": "Não é possível excluir um cliente com ordens em andamento vinculadas."
     }
     with Session(engine) as session:
         assert session.get(Customer, customer_id) is not None
@@ -168,12 +171,18 @@ def test_foreign_key_conflict_is_handled_and_connection_recovers(
     )
 
 
-def test_customer_with_only_cancelled_orders_can_be_deleted(client, database):
+@pytest.mark.parametrize(
+    "statuses",
+    [
+        (OrderStatus.CANCELLED,) * 2,
+        (OrderStatus.DELIVERED,) * 2,
+        (OrderStatus.CANCELLED, OrderStatus.DELIVERED),
+    ],
+)
+def test_customer_with_only_closed_orders_can_be_deleted(client, database, statuses):
     customer_id = client.post("/customers/", json=VALID).json()["id"]
     engine, _ = database
-    order_ids = [
-        link_order(engine, customer_id, OrderStatus.CANCELLED) for _ in range(2)
-    ]
+    order_ids = [link_order(engine, customer_id, status) for status in statuses]
     assert client.delete(f"/customers/{customer_id}").status_code == 204
     assert client.get(f"/customers/{customer_id}").status_code == 404
     with Session(engine) as session:
@@ -187,10 +196,15 @@ def test_customer_with_only_cancelled_orders_can_be_deleted(client, database):
             )
 
 
-def test_mixed_orders_prevent_deletion_and_preserve_cancelled_history(client, database):
+@pytest.mark.parametrize(
+    "closed_status", [OrderStatus.CANCELLED, OrderStatus.DELIVERED]
+)
+def test_mixed_orders_prevent_deletion_and_preserve_closed_history(
+    client, database, closed_status
+):
     customer_id = client.post("/customers/", json=VALID).json()["id"]
     engine, _ = database
-    cancelled_id = link_order(engine, customer_id, OrderStatus.CANCELLED)
+    cancelled_id = link_order(engine, customer_id, closed_status)
     link_order(engine, customer_id, OrderStatus.RECEIVED)
     assert client.delete(f"/customers/{customer_id}").status_code == 409
     with Session(engine) as session:
