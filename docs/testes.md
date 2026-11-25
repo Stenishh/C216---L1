@@ -2,8 +2,7 @@
 
 Requer Python 3.11+, Poetry 2.4+, Node 22.12+, npm, Make e Docker com Compose v2.
 Execute `make install frontend-install` e `make e2e-install`. Em Linux/CI,
-instale também dependências do Chromium com
-`cd frontend && npx playwright install --with-deps chromium`.
+instale também dependências do Chromium com `make e2e-install-deps`.
 
 `make check-all` executa Ruff (lint e formatação), toda a suíte Pytest em
 PostgreSQL temporário, Biome, Vitest, build e Playwright. Os testes Vitest
@@ -23,7 +22,7 @@ Os cenários cobrem CRUD de cliente e ordem sem andamento, orçamento zero,
 aprovação, reparo, conclusão, entrega, histórico, filtros e reload em URLs
 de detalhe para confirmar persistência. Falhas geram screenshot, trace e
 relatório em `frontend/test-results` e `frontend/playwright-report`, ignorados
-pelo Git. Para examinar: `cd frontend && npx playwright show-report`.
+pelo Git. Para examinar: `make e2e-report`.
 
 O workflow `.github/workflows/checks.yml` executa a mesma verificação em PRs
 para `main`, em pushes para `main`/`projeto-final` que alterem backend,

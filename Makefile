@@ -4,11 +4,13 @@ PORT ?= 8000
 BACKEND_URL ?= http://$(HOST):$(PORT)
 COMPOSE ?= docker compose
 NPM ?= npm
+PLAYWRIGHT_INSTALL_FLAGS ?=
 
 .DEFAULT_GOAL := help
 .PHONY: help install run health test lint format format-check check-backend
 .PHONY: env-init db-up db-down db-status db-upgrade db-current db-check db-migration test-postgres
 .PHONY: frontend-install frontend-run frontend-check frontend-test frontend-build
+.PHONY: frontend-format frontend-audit e2e-install-deps e2e-report
 
 help:
 	@echo "make check-all - Ruff, PostgreSQL, Biome, Vitest, build e E2E real"
@@ -16,6 +18,9 @@ help:
 	@echo "make up-build / ps / down - opera frontend, API e banco em Docker"
 	@echo "make db-upgrade-local / db-current-local - migrations pelo Python local"
 	@echo "make e2e-install - instala Chromium para testes E2E"
+	@echo "make e2e-install-deps - instala Chromium e dependencias do sistema (Linux/CI)"
+	@echo "make e2e-report - abre o relatorio Playwright local"
+	@echo "make frontend-format / frontend-audit - formata interface / audita dependencias"
 	@echo "make frontend-install - instala dependencias do frontend pelo lockfile"
 	@echo "make frontend-run     - inicia interface com proxy local para a API"
 	@echo "make frontend-check   - verifica JavaScript, JSX e formatacao com Biome"
@@ -31,7 +36,7 @@ help:
 	@echo "make check-backend - executa lint, format-check e testes"
 	@echo "make env-init      - cria .env a partir do exemplo, sem sobrescrever"
 	@echo "make db-up         - inicia somente PostgreSQL e aguarda saude"
-	@echo "make db-down       - para PostgreSQL preservando o volume"
+	@echo "make db-down       - encerra a stack Compose preservando o volume"
 	@echo "make db-status     - mostra o estado do banco"
 	@echo "make db-upgrade    - aplica migrations no banco configurado"
 	@echo "make db-current    - mostra a revisao atual"
@@ -105,6 +110,12 @@ frontend-test:
 frontend-build:
 	cd frontend && $(NPM) run build
 
+frontend-format:
+	cd frontend && $(NPM) run format
+
+frontend-audit:
+	cd frontend && $(NPM) audit
+
 .PHONY: up-build ps down db-upgrade-local db-current-local e2e-install
 up-build:
 	$(COMPOSE) up --build --detach --wait
@@ -122,7 +133,13 @@ db-current-local:
 	cd backend && $(POETRY) run alembic current
 
 e2e-install:
-	cd frontend && $(NPM) exec playwright install chromium
+	cd frontend && $(NPM) exec -- playwright install $(PLAYWRIGHT_INSTALL_FLAGS) chromium
+
+e2e-install-deps:
+	$(MAKE) e2e-install PLAYWRIGHT_INSTALL_FLAGS=--with-deps
+
+e2e-report:
+	cd frontend && $(NPM) exec -- playwright show-report
 
 .PHONY: e2e check-all
 e2e:

@@ -20,8 +20,35 @@ dos três serviços em Docker está em [Execução com Docker](docs/docker.md).
 O escopo da primeira versão foi aprovado em 15/11/2026. Os campos, os fluxos e
 as regras estão em [Escopo e regras de negócio](docs/escopo.md).
 
-O desenvolvimento será incremental, conforme o
+O histórico de desenvolvimento está organizado no
 [GitHub Project](https://github.com/users/Stenishh/projects/1).
+
+## Executar a aplicação completa
+
+Com Docker Desktop/Engine e Compose v2, Python, Poetry e Make disponíveis:
+
+```bash
+make install
+make env-init
+make up-build
+make db-upgrade
+make db-current
+make ps
+```
+
+Revise o `.env` antes de iniciar os contêineres. Acesse a interface em
+http://127.0.0.1:8080 e a API em http://127.0.0.1:8000/docs.
+`db-current` deve mostrar `0001 (head)`. As migrations são um passo explícito:
+aplique-as antes de usar as telas. `make down` encerra os serviços preservando
+os dados. Portas, proxy e variáveis estão em [Docker](docs/docker.md).
+
+## Tecnologias
+
+Backend Python com FastAPI, Poetry, Ruff, SQLAlchemy e Alembic; banco
+PostgreSQL; frontend JavaScript com React, Vite, Tailwind e Biome.
+Testes com Pytest, Vitest/Testing Library e Playwright. Execução integrada
+com Docker Compose e verificação automática com GitHub Actions.
+
 ## Pré-requisitos e execução local do backend
 
 Python 3.11 ou superior, Poetry 2.4 ou superior e GNU Make. No Windows, use
@@ -124,8 +151,9 @@ docs/escopo.md     # escopo aprovado e regras planejadas
 frontend/         # React, Vite, Tailwind, cliente HTTP e testes de interface
 docs/frontend.md  # execução local, configuração pública e fluxos da interface
 docs/banco.md      # modelo, configuração e validação do banco
-compose.yaml      # PostgreSQL de desenvolvimento
+compose.yaml      # frontend Nginx, API e PostgreSQL com volume persistente
 compose.test.yaml # PostgreSQL temporário para testes
+compose.e2e.yaml  # três serviços isolados para Playwright
 scripts/          # runner de testes com banco isolado
 Makefile          # instalação, execução e validação
 ```
@@ -138,8 +166,18 @@ Com Node.js 22.12+ e npm, execute `make frontend-install` e
 `make frontend-test` e `make frontend-build`.
 
 Veja [configuração, comandos e testes do frontend](docs/frontend.md).
-Para a aplicação completa, veja [Docker](docs/docker.md). Vídeo e revisão da
-entrega seguem na atividade 14.
+Para a aplicação completa, veja [Docker](docs/docker.md).
 
 `make check-all` valida backend, frontend e E2E real com PostgreSQL isolado.
 Veja [preparação, isolamento e CI](docs/testes.md).
+
+## Vídeo e entrega
+
+O vídeo demonstrativo ainda será gravado e seu link será publicado nesta seção
+antes da entrega. O [roteiro de demonstração](docs/entrega.md) cobre Docker,
+arquitetura, CRUD, atendimento, persistência e testes.
+
+A entrega usa a branch `projeto-final` e um PR aberto para `main`, com os Checks
+aprovados e sem merge. No Teams, enviar os links do repositório, do PR e do vídeo
+até 28/11/2026, sem ZIP. Os links devem permanecer acessíveis ao monitor e ao
+professor durante a avaliação.

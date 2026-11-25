@@ -2,7 +2,7 @@
 
 Frontend próprio em React com JavaScript, Vite, Tailwind CSS e Biome. Node.js
 22.12 ou superior (ou 24 LTS) e npm são necessários. Dependências resolvidas
-ficam no `frontend/package-lock.json`; use `npm ci` para reproduzir a instalação.
+ficam no `frontend/package-lock.json`; use `make frontend-install` para reproduzir a instalação.
 
 Na raiz, com GNU Make (Git Bash no Windows):
 
@@ -16,14 +16,15 @@ make frontend-build
 
 Sem Make, execute `npm ci`, `npm run dev`, `npm run check`, `npm test` e
 `npm run build` dentro de `frontend/`. Para aplicar formatação, use
-`npm run format`. O build é gerado em `frontend/dist/`.
+`make frontend-format` na raiz (equivalente a `npm run format` no frontend).
+O build é gerado em `frontend/dist/`.
 
 ## Conexão com a API
 
 Inicie o banco, aplique migrations e execute `make run`, conforme o README.
 O frontend abre em http://127.0.0.1:5173. O Vite encaminha `/api/*` para
 http://127.0.0.1:8000, removendo o prefixo. Isso permite desenvolvimento local
-na mesma origem sem depender da configuração de CORS da atividade 12.
+na mesma origem. O backend também possui CORS explícito para as origens configuradas.
 
 Copie `frontend/.env.example` para `frontend/.env` somente se precisar mudar
 os padrões. `API_PROXY_TARGET` altera o destino do proxy de desenvolvimento.
@@ -35,7 +36,8 @@ alterar o ambiente; mudanças de produção exigem um novo build.
 O proxy existe apenas no servidor de desenvolvimento. Para servir `dist/`,
 configure o servidor web para encaminhar `/api` à API e retornar `index.html`
 nas rotas da aplicação; alternativamente, use uma URL absoluta da API com
-CORS explícito. Docker e implantação serão tratados na atividade 12.
+CORS explícito. O Compose já fornece Nginx com proxy e fallback;
+veja [execução com Docker](docker.md).
 
 ## Organização e validação
 
@@ -83,5 +85,5 @@ stack isolada; veja [testes e CI](testes.md).
 ### Dependências de desenvolvimento
 
 Em 24/11/2026, a instalação do Playwright e a auditoria da árvore atual
-retornaram zero vulnerabilidades. Reavalie com `npm audit` ao atualizar o
+retornaram zero vulnerabilidades. Reavalie com `make frontend-audit` ao atualizar o
 lockfile. Não aplique correções forçadas sem revisar mudanças de versões.
