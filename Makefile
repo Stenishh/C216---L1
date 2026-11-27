@@ -1,4 +1,9 @@
-POETRY ?= poetry
+# Recipes run from backend; prefer the repository-local Poetry when available.
+ifeq ($(OS),Windows_NT)
+POETRY ?= $(if $(wildcard .venv-tools/Scripts/poetry.exe),"..\.venv-tools\Scripts\poetry.exe",poetry)
+else
+POETRY ?= $(if $(wildcard .venv-tools/Scripts/poetry.exe),../.venv-tools/Scripts/poetry.exe,poetry)
+endif
 HOST ?= 127.0.0.1
 PORT ?= 8000
 BACKEND_URL ?= http://$(HOST):$(PORT)
