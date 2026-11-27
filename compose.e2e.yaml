@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: repara_e2e
+      POSTGRES_USER: repara_e2e
+      POSTGRES_PASSWORD: ${E2E_DB_PASSWORD:?Use scripts/test_e2e.py}
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repara_e2e -d repara_e2e"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://repara_e2e:${E2E_DB_PASSWORD:?Use scripts/test_e2e.py}@db:5432/repara_e2e
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1::8080"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/healthz"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
