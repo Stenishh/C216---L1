@@ -7,7 +7,25 @@ O objetivo é acompanhar ordens de serviço de computadores e notebooks, desde o
 recebimento até a entrega, relacionando clientes, diagnóstico, orçamento e
 histórico do atendimento.
 
-## Estado do projeto
+[Assistir à demonstração](https://www.youtube.com/watch?v=-eIFJyp5Vo0) ·
+[PR de entrega](https://github.com/Stenishh/C216---L1/pull/9) ·
+[Verificações automáticas](https://github.com/Stenishh/C216---L1/pull/9/checks)
+
+## Funcionalidades
+
+- Cadastro, busca, edição e exclusão de clientes, com proteção para ordens em andamento.
+- Abertura e consulta de ordens, com filtros e indicadores no painel.
+- Atendimento completo: diagnóstico, orçamento, aprovação, reparo, conclusão e entrega.
+- Histórico persistente de cada ordem e validação das transições de status.
+- Interface web, API documentada e banco integrados por Docker Compose.
+
+## Arquitetura
+
+```text
+Navegador → React / Nginx → FastAPI → PostgreSQL
+                           │
+                           └─ rotas → serviços → repositórios
+```
 
 Backend com FastAPI, endpoint `/health`, CRUD de clientes e ordens, validação de dados,
 Ruff e comandos Make. A persistência inclui models de clientes, ordens e
@@ -188,8 +206,11 @@ Veja [preparação, isolamento e CI](docs/testes.md).
 
 ## Vídeo e entrega
 
-O vídeo demonstrativo ainda será gravado e seu link será publicado nesta seção
-antes da entrega. O [roteiro de demonstração](docs/entrega.md) cobre Docker,
+**[Assistir ao vídeo demonstrativo do Repara no YouTube](https://www.youtube.com/watch?v=-eIFJyp5Vo0)**
+
+A entrega está no **[PR #9 — Projeto Final](https://github.com/Stenishh/C216---L1/pull/9)**.
+Os resultados da integração contínua estão na [aba Checks](https://github.com/Stenishh/C216---L1/pull/9/checks).
+O [roteiro de demonstração](docs/entrega.md) orienta a apresentação de Docker,
 arquitetura, CRUD, atendimento, persistência e testes.
 
 A entrega usa obrigatoriamente a branch `projeto-final` e um PR de
